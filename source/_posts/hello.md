@@ -1,3 +1,7 @@
+---
+title: 第二篇
+---
+
 # nginx设置代理，把nuxt项目放到服务器上运行的步骤
 
 第一步、在本地 npm run build,会在.nuxt文件夹下生成dist文件;
