@@ -28,7 +28,7 @@ module.exports = {
                 "hello",
             ]
         },
-        sidebarDepth: 2,
+        sidebarDepth: 2,//侧边栏显示到多少级的标题
         lastUpdated: 'Last Updated',
     }
 }
