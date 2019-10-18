@@ -1,0 +1,12 @@
+{
+  "name": "Chenyating.github.io",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:Chenyating/Chenyating.github.io.git",
+  "author": "Cyating <924471303@qq.com>",
+  "license": "MIT",
+  "scripts": {
+    "docs:dev": "vuepress dev docs",
+    "docs:build": "vuepress build docs"
+  }
+}
