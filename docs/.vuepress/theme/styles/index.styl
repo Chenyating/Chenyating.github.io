@@ -1,8 +1,14 @@
-@require './config'
-@require './code'
-@require './custom-blocks'
-@require './arrow'
-@require './wrapper'
+// 本人自己写的主题
+@require './base.styl'
+
+
+// 默认配置，用的是原来的主题；
+@require './default/config'
+@require './default/code'
+@require './default/custom-blocks'
+@require './default/arrow'
+@require './default/wrapper'
+@require './default/mobile.styl'
 
 html, body
   padding 0
@@ -196,5 +202,3 @@ th, td
 
     .page
       padding-left 0
-
-@require 'mobile.styl'

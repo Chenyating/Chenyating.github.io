@@ -1,0 +1,23 @@
+// 弹性布局，向右移动
+.flex 
+    display: flex;
+    flex-wrap: wrap;
+
+
+.flex-row-between 
+    @extend .flex;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+
+
+.flex-col-between 
+    @extend .flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+
+.flex-row-around 
+    @extend .flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-wrap: nowrap;
