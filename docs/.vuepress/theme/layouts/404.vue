@@ -3,6 +3,3 @@
         404
     </div>
 </template>
-<script>
-
-</script>

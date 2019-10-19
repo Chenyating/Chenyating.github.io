@@ -1,19 +1,17 @@
 <template>
     <div>
-       主题正在使用诶
-        <Content/>
+        shiyong
+        <search/>
+        <Content class="theme-default-content" />
     </div>
 </template>
-
 <script>
-    export default {
-        name: "layout",
-        mounted(){
-            console.log("这是首页吧？",this.$site,this.$page)
-        }
+import search from '../components/AlgoliaSearchBox'
+export default {
+    components:{search},
+    mounted(){
+        console.log(this.$site)
+        console.log(this.$page)
     }
+}
 </script>
-
-<style scoped>
-
-</style>

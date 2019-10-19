@@ -25,10 +25,18 @@ module.exports = {
             '/android/': [
                 //文件目录
                 "",
+                "hi",
                 "hello",
             ]
         },
-        sidebarDepth: 2,//侧边栏显示到多少级的标题
+        // sidebar: 'auto',
+        sidebarDepth: 3,//侧边栏显示到多少级的标题
         lastUpdated: 'Last Updated',
+        search: true,
+        searchMaxSuggestions: 10,
+        algolia: {
+            apiKey: '<API_KEY>',
+            indexName: '<INDEX_NAME>'
+          }
     }
 }
