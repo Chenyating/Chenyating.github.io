@@ -1,35 +1,36 @@
 <template>
-<div class="flex">
-        <Catalog class="catalog" :titleList="titleList" />
-        <Content class="theme-default-content content" />
+<div class="content-box">
+    <div class="flex-row-between">
+    <Catalog/>
+    <div class=" content">
+        <mdContent/>
+    </div>
+    </div>
 </div>
 </template>
 
 <script>
 import Catalog from '../components/catalog.vue'
+import mdContent from '../components/mdContent.vue'
 export default {
     components: {
-        Catalog
-    },
-    data() {
-        return {
-            titleList: null
-        }
-    },
-    created() {
-        this.titleList = this.$page.headers;
-        console.log(this.$site)
-        console.log(this.$page)
+        Catalog,mdContent
     }
 }
 </script>
 
 <style>
-.catalog {
-    width: 500px;
+.flex-row-between{
+    height: 100%;
+}
+.content-box{
     height: 100%;
 }
 
 .content {
+    width: 100%;
+    height: 100%;
+    overflow: scroll;
+    overflow-x: hidden;
 }
 </style>

@@ -1,6 +1,6 @@
 <template>
     <div>
-        这个是主页
+        <div>我的地盘我做主</div>
     </div>
 </template>
 <script>

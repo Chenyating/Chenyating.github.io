@@ -6,6 +6,7 @@ module.exports = {
         ['link', { rel: 'icon', href: '/img/logo.ico' }],//注意"/"就是public资源目录。标签的logo
     ],
     themeConfig: {
+        author:'陈雅婷',
         //导航栏
         nav: [
             { text: '主页', link: '/' },
