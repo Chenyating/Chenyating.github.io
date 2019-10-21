@@ -1,37 +1,35 @@
 <template>
-<div class="content-box">
+<div class="bg-box">
+    <mynav/>
     <div class="flex-row-between">
-        <div>info</div>
-    <div class=" content">
-        <mdContent/>
+        <!-- <Catalog/> -->
+    <Content class="theme-default-content Content" />
     </div>
-    <Catalog/>
-    </div>
+
 </div>
 </template>
 
 <script>
-import Catalog from '../components/catalog.vue'
-import mdContent from '../components/mdContent.vue'
+import mynav from "../components/mynav.vue";
+import Catalog from "../components/catalog.vue";
+import mdContent from "../components/mdContent.vue";
 export default {
     components: {
-        Catalog,mdContent
+        mynav,
+        Catalog,
+        mdContent,
     }
-}
+};
 </script>
-
-<style>
-.flex-row-between{
+<style scoped>
+.bg-box{
+    margin: 0 auto;
+    background: url('../public/img/bg.jpg');
+    width: 1260px;
     height: 100%;
-}
-.content-box{
-    height: 100%;
-}
-
-.content {
-    width: 100%;
-    height: 100%;
-    overflow: scroll;
-    overflow-x: hidden;
+    min-width: 1024px;
+    background-size: 100%;
+    background-repeat: no-repeat;
+    background-position: top;
 }
 </style>
