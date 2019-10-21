@@ -1,10 +1,11 @@
 <template>
 <div class="content-box">
     <div class="flex-row-between">
-    <Catalog/>
+        <div>info</div>
     <div class=" content">
         <mdContent/>
     </div>
+    <Catalog/>
     </div>
 </div>
 </template>

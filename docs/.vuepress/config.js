@@ -1,12 +1,12 @@
 module.exports = {
-    title: '标题名称',//网站名称
-    description: '网站描述',//网站描述
+    title: 'YATING',//网站名称
+    description: 'my web',//网站描述
     //head标签
     head: [
         ['link', { rel: 'icon', href: '/img/logo.ico' }],//注意"/"就是public资源目录。标签的logo
     ],
     themeConfig: {
-        author:'陈雅婷',
+        author:'tinger',
         //导航栏
         nav: [
             { text: '主页', link: '/' },
