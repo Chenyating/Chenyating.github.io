@@ -1,10 +1,8 @@
 <template>
 <div class="bg-box">
     <!-- <mynav/> -->
-    <div class="flex-row-center">
-        <Catalog/>
+        <Catalog v-if="show" />
         <mdContent/>
-    </div>
 </div>
 </template>
 
@@ -18,13 +16,21 @@ export default {
         Catalog,
         mdContent,
     },
-    methods:{
-
+    data() {
+        return {
+            show: true
+        }
     },
-    
-    mounted() {
-
+mounted(){
+    if(window.innerWidth<=window.innerHeight){
+        this.show=false;
     }
+    window.onresize=()=>{
+        if(window.innerWidth<=1100){
+            this.show=false;
+        }
+    }
+}
 
 };
 </script>
