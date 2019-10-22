@@ -1,33 +1,43 @@
-.Content{
-    // margin-top: 10em !important;
+.Content {
+    width 100%
+    height 100%
+    h1:first-child{
+        display: none !important
     }
-.catalog {
-    overflow: auto;
-    border-right: 1px solid whitesmoke;
-    border-bottom: 1px solid whitesmoke;
-    position: fixed;
-    height: auto;
-    overflow: auto;
-    padding: 2em;
-    background: white;
-    z-index:20;
 }
 
 .catalog-box {
-     overflow: scroll;
+    width 400px
+    position relative 
+    overflow hidden
 }
 
-.level1{
-    font-weight bold
-    font-size 1.7em
+.catalog {
+    position fixed 
+    margin: auto
+    height auto
+    max-height  700px;
+    overflow scroll
+    overflow-x: hidden
+    padding 1em
+    z-index 20
+    width 300px
 }
-.level2{
-    color #252525
-    font-weight bold
-    font-size 1.2em
+    .catalog::-webkit-scrollbar {display:none}
+
+.level1 {
+    font-weight bold 
+    font-size 1.5em
 }
-.level3{
-    font-size 0.9em
-    padding-left 1em
+
+.level2 {
+    color #252525 
+    font-weight bold 
+    font-size 1em
+}
+
+.level3 {
+    font-size 0.8em 
+    padding-left 1em 
     line-height 2em
 }

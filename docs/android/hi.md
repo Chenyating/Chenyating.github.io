@@ -5,10 +5,7 @@ webGL（web图形库）是一种JavaScript API ，用于在任何兼容的web浏
 WebGL 给我们提供了一系列的图形接口，能够让我们通过 JavaScript 去使用 GPU 来进行浏览器图形渲染的工具。
 
 <!-- more -->
-
-## san  ji
-### 三  大组  件
-#### hhh
+### 三大组件
 
 > 在Three.js中，要渲染物体到网页中，我们需要3个组建：`场景（scene）`、`相机（camera）`和`渲染器（renderer）`。有了这三样东西，才能将物体渲染到网页中去。
 

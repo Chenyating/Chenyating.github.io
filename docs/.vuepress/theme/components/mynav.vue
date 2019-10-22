@@ -1,6 +1,6 @@
 <template>
 <div class="nav-box">
-    <img class="nav" src="../public/img/text.png" />
+    <div class="nav"></div>
 </div>
 </template>
 <script>
@@ -17,11 +17,16 @@ export default {
 </script>
 <style scoped>
 .nav-box {
-    text-align: right;
+    height: 300px;
+    z-index: 999;
+    background: url('../public/img/bg.jpg');
+    background-repeat: no-repeat;
+    background-position-x: center;
 }
-
-.nav {
-    width: 70%;
-    background-size: 100%;
+.nav{
+    margin: 0 auto;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
 }
 </style>
