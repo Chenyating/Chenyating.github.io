@@ -1,3 +1,3 @@
 <template>
-    <Content class="theme-default-content Content" />
+<Content class="theme-default-content Content" />
 </template>

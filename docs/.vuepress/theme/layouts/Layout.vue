@@ -1,11 +1,8 @@
 <template>
 <div class="bg-box">
-    <mynav/>
-    <div class="flex-row-between">
-        <!-- <Catalog/> -->
-    <Content class="theme-default-content Content" />
-    </div>
-
+    <!-- <mynav/> -->
+        <Catalog v-if="show" />
+        <mdContent/>
 </div>
 </template>
 
@@ -18,18 +15,37 @@ export default {
         mynav,
         Catalog,
         mdContent,
+    },
+    data() {
+        return {
+            show: true
+        }
+    },
+mounted(){
+    if(window.innerWidth<=window.innerHeight){
+        this.show=false;
     }
+    window.onresize=()=>{
+        if(window.innerWidth<=1100){
+            this.show=false;
+        }
+    }
+}
+
 };
 </script>
 <style scoped>
-.bg-box{
+.bg-box {
+    height: 100%;
+}
+
+.content-bg {
     margin: 0 auto;
     background: url('../public/img/bg.jpg');
-    width: 1260px;
-    height: 100%;
-    min-width: 1024px;
+    height: 200px;
     background-size: 100%;
     background-repeat: no-repeat;
     background-position: top;
+    /* background-position-x: center; */
 }
 </style>
