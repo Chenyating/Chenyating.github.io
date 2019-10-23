@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div>我的地盘我做主</div>
+        <div class="haha">我的地盘我做主</div>
     </div>
 </template>
 <script>

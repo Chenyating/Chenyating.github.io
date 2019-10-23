@@ -1,6 +1,5 @@
 <template>
-<div>
-    <!-- <mynav/> -->
+<div class="big-box">
         <Catalog/>
         <mdContent/>
 </div>
@@ -16,28 +15,15 @@ export default {
         Catalog,
         mdContent,
     },
-    methods:{
+    methods: {
 
     },
-    
+
     mounted() {
 
     }
 
 };
 </script>
-<style scoped>
-.bg-box {
-    height: 100%;
-}
-
-.content-bg {
-    margin: 0 auto;
-    background: url('../public/img/bg.jpg');
-    height: 200px;
-    background-size: 100%;
-    background-repeat: no-repeat;
-    background-position: top;
-    /* background-position-x: center; */
-}
+<style lang='stylus' scoped>
 </style>

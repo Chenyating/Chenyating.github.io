@@ -1,29 +1,45 @@
-.Content {
-    width 100%
-    height 100%
-    h1:first-child{
-        display: none !important
+// @media (max-width: $MQNarrow)
+//   .content-box{
+//     width: 100%
+//     height 100%
+//     display: block
+// }
+// .catalog{
+//     display: none
+//     }
+
+// // wide mobile
+// @media (max-width: $MQMobile)
+//   .content-box{
+//     width: 100%
+//     height 100%
+//     display: block
+// }
+// .catalog{
+//     display: none
+//     }
+
+// // narrow mobile
+// @media (max-width: $MQMobileNarrow)
+//  .content-box{
+//     width: 100%
+//     height 100%
+//     display: block
+// }
+// .catalog{
+//     display: none
+//     }
+// content
+.content{
+    max-width 750px;
+    margin: 0 auto;
     }
-}
-
-.catalog-box {
-    position relative 
-    overflow hidden
-}
-
+// catalog
 .catalog {
-    position fixed 
-    margin: auto
-    height auto
-    max-height  700px;
-    overflow scroll
-    overflow-x: hidden
-    padding 1em
-    z-index 20
-    width 300px
+    position fixed
+    right:  0
+    width 20em
 }
-    .catalog::-webkit-scrollbar {display:none}
-
 .level1 {
     font-weight bold 
     font-size 1.5em
@@ -39,4 +55,13 @@
     font-size 0.8em 
     padding-left 1em 
     line-height 2em
+}
+// layout 
+.big-box{
+    height 100%;
+    width: 100%;
+    }
+    // 解决vue高度100%无效问题
+html,body,#app{
+ height: 100%;
 }
