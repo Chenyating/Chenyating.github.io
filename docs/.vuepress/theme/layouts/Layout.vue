@@ -1,10 +1,8 @@
 <template>
-<div class="bg-box">
+<div>
     <!-- <mynav/> -->
-    <div class="flex-row-center">
         <Catalog/>
         <mdContent/>
-    </div>
 </div>
 </template>
 

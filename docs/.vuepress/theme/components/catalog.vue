@@ -7,6 +7,7 @@
         {{title}}
         <a class="level1" :href="'#'+$page.title.replace(/\s+/g,'-').toLowerCase()">{{$page.title}}</a>
         <a :class="[item.level==2?'level2':'level3',{'select':item.title==selectTitle}]" v-for="(item,index) in $page.headers" :key="index" :href="'#'+item.title.replace(/\s+/g,'-').toLowerCase()" nofollow @click="clickTitle(item.title)">{{item.title}}</a>
+        <a :class="[item.level==2?'level2':'level3',{'select':item.title==selectTitle}]" v-for="(item,index) in $page.headers" :key="index" :href="'#'+item.title.replace(/\s+/g,'-').toLowerCase()" nofollow @click="clickTitle(item.title)">{{item.title}}</a>
     </div>
 </div>
 </template>

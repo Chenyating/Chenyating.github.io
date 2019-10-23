@@ -1,50 +1,43 @@
-// 颜色
-$black=#000000;
-$text-color=#555555;
-$line-color=#e8eaec;
-$red=#d00;
-$blue=#1862ab;
-$white=#ffffff;
-$gray=#999999;
-$green=#19be6b;
-$orange=#ff9900;
+.Content {
+    width 100%
+    height 100%
+    h1:first-child{
+        display: none !important
+    }
+}
 
-// 背景
-$bg-gray=#f8f8f9;
+.catalog-box {
+    width 400px
+    position relative 
+    overflow hidden
+}
 
-// 通用尺寸；
-$distansBig=10px; //大间距
-$distansSmall=5px; //小间距
-$line-sizeBig=2px;
-$line-sizeSmall=1px;
-$icon-size=14px;
+.catalog {
+    position fixed 
+    margin: auto
+    height auto
+    max-height  700px;
+    overflow scroll
+    overflow-x: hidden
+    padding 1em
+    z-index 20
+    width 300px
+}
+    .catalog::-webkit-scrollbar {display:none}
 
-// 弹性布局，向右移动
-.flex 
-    display: flex;
-    flex-wrap: wrap;
+.level1 {
+    font-weight bold 
+    font-size 1.5em
+}
 
-.flex-row-between 
-    @extend .flex;
-    justify-content: space-between;
-    flex-wrap: nowrap;
-    height: 100%;
+.level2 {
+    color #252525 
+    font-weight bold 
+    font-size 1em
+}
 
-.flex-row-center 
-    @extend .flex;
-    justify-content: center;
-    flex-wrap: nowrap;
-    min-width 1110px;
-
-.flex-col-between 
-    @extend .flex;
-    flex-direction: column;
-    justify-content: space-between;
-
-
-.flex-row-around 
-    @extend .flex;
-    justify-content: space-around;
-    align-items: center;
-    flex-wrap: nowrap;
-
+.level3 {
+    font-size 0.8em 
+    padding-left 1em 
+    line-height 2em
+}

@@ -1,12 +1,4 @@
-// 本人自己写的主题
-@require './catalog.styl'
-@require './base.styl'
-#app{
-  height 100%;
-}
-
-
-// 默认配置，用的是原来的主题；
+@require './base'
 @require './default/config'
 @require './default/code'
 @require './default/custom-blocks'
@@ -18,9 +10,6 @@ html, body
   padding 0
   margin 0
   background-color #fff
-  height 100%;
-  overflow-x hidden
-
 
 body
   font-family -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif
@@ -209,3 +198,5 @@ th, td
 
     .page
       padding-left 0
+
+@require './default/mobile.styl'
