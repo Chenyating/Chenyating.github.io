@@ -1,7 +1,8 @@
 <template>
-<div class="big-box">
-        <Catalog/>
-        <mdContent/>
+<div>
+    <mynav/>
+    <!-- <Catalog/> -->
+    <mdContent/>
 </div>
 </template>
 

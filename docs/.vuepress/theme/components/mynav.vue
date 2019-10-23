@@ -1,32 +1,37 @@
 <template>
 <div class="nav-box">
-    <div class="nav"></div>
+    <div class="link-item" @click="goPage(item.link)" v-for="(item,index) in navLinkList" :key="index">
+        {{item.text}}
+    </div>
 </div>
 </template>
 <script>
 export default {
     data() {
         return {
-
+            navLinkList: []
         }
     },
+    methods:{
+goPage(link){
+    this.$router.push(link)
+}
+    },
     mounted() {
-        console.log(this.$site, "???")
+        this.navLinkList = this.$site.themeConfig.nav;
     }
 }
 </script>
 <style scoped>
-.nav-box {
-    height: 300px;
-    z-index: 999;
-    background: url('../public/img/bg.jpg');
-    background-repeat: no-repeat;
-    background-position-x: center;
-}
-.nav{
-    margin: 0 auto;
+.nav-box{
     width: 100%;
-    height: 100%;
-    z-index: 0;
+    position: fixed;
+    display: flex;
+    justify-content: center;
+    z-index: 99999;
+    background: white;
+}
+.link-item{
+    background: white;
 }
 </style>
