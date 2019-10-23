@@ -29,9 +29,11 @@ goPage(link){
     display: flex;
     justify-content: center;
     z-index: 99999;
-    background: white;
+    background: black;
 }
 .link-item{
-    background: white;
+    background: black;
+    color: #ffffff;
+    padding: 1em;
 }
 </style>

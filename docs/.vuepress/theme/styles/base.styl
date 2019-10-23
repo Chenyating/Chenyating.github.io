@@ -1,45 +1,70 @@
-// @media (max-width: $MQNarrow)
-//   .content-box{
-//     width: 100%
-//     height 100%
-//     display: block
-// }
-// .catalog{
-//     display: none
-//     }
+.content-box{
+    margin: 0 auto
+    position relative
+    width: 1024px
+    height 100%
+    display: flex
+    justify-content: center
+}
+@media (max-width: $MQNarrow)
+  .content-box{
+    width: 100%
+    height 100%
+    display: block
+}
+.catalog{
+    display: none
+    }
 
-// // wide mobile
-// @media (max-width: $MQMobile)
-//   .content-box{
-//     width: 100%
-//     height 100%
-//     display: block
-// }
-// .catalog{
-//     display: none
-//     }
+// wide mobile
+@media (max-width: $MQMobile)
+  .content-box{
+    width: 100%
+    height 100%
+    display: block
+}
+.catalog{
+    display: none
+    }
 
-// // narrow mobile
-// @media (max-width: $MQMobileNarrow)
-//  .content-box{
-//     width: 100%
-//     height 100%
-//     display: block
-// }
-// .catalog{
-//     display: none
-//     }
+// narrow mobile
+@media (max-width: $MQMobileNarrow)
+ .content-box{
+    width: 100%
+    height 100%
+    display: block
+}
+.catalog{
+    display: none
+    }
+
 // content
 .content{
-    max-width 750px;
-    margin: 0 auto;
-    padding: 0.5em;
+    // height 100%
+    max-width 800px;
+    padding:3em 1em;
+    // overflow scroll
+    box-sizing: border-box;
+    overflow-x: hidden
+    position relative !important
     }
+
 // catalog
+// .catalog-box {
+//     min-width 200px
+//     overflow hidden
+//     position absolute
+//     background: #ffffff
+//     z-index: 9999
+// }
 .catalog {
-    position fixed
-    right:  0
-    width 20em
+position:fixed;
+margin:auto;
+top:10em;
+right:  0
+width:400px;
+height:200px;
+background: #ffffff
 }
 .level1 {
     font-weight bold 
@@ -58,9 +83,10 @@
     line-height 2em
 }
 // layout 
-.big-box{
-    height 100%;
+.all-box{
+    // height 100%;
     width: 100%;
+    position relative
     }
     // 解决vue高度100%无效问题
 html,body,#app{

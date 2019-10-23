@@ -1,8 +1,10 @@
 <template>
-<div>
+<div class="all-box">
     <mynav/>
-    <!-- <Catalog/> -->
-    <mdContent/>
+    <div class="content-box">
+        <mdContent/>
+        <Catalog id="catalog"/>
+    </div>
 </div>
 </template>
 
@@ -21,7 +23,12 @@ export default {
     },
 
     mounted() {
-
+        //目录随滚动条定位
+        // window.onscroll=function(){
+        // var catalog=document.getElementById('catalog');
+        // var position=document.documentElement.scrollTop
+        // catalog.style.top=position+'px';
+        // }
     }
 
 };
