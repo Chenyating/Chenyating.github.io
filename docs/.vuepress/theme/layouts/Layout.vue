@@ -3,7 +3,7 @@
     <mynav/>
     <div class="content-box">
         <mdContent/>
-        <Catalog id="catalog"/>
+        <Catalog id="catalog" />
     </div>
 </div>
 </template>
@@ -23,11 +23,13 @@ export default {
     },
 
     mounted() {
-        //目录随滚动条定位
-        // window.onscroll=function(){
-        // var catalog=document.getElementById('catalog');
-        // var position=document.documentElement.scrollTop
-        // catalog.style.top=position+'px';
+        // 目录随滚动条定位
+        // window.onscroll = ()=> {
+        //     requestAnimationFrame(function() {
+        //         var catalog = document.getElementById('catalog');
+        //         var position = document.documentElement.scrollTop
+        //         catalog.style.top = position + 'px';
+        //     });
         // }
     }
 
