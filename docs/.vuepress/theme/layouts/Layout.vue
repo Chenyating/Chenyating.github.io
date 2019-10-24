@@ -13,18 +13,8 @@ export default {
         mdContent,
     },
     methods: {
-
     },
-
     mounted() {
-        // 目录随滚动条定位
-        // window.onscroll = ()=> {
-        //     requestAnimationFrame(function() {
-        //         var catalog = document.getElementById('catalog');
-        //         var position = document.documentElement.scrollTop
-        //         catalog.style.top = position + 'px';
-        //     });
-        // }
     }
 
 };
