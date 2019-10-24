@@ -29,7 +29,7 @@ export default {
             this.positionList = this.positionList.concat(list)
             window.onscroll = () => {
                 var position = document.documentElement.scrollTop;
-                var small = this.positionList[0][0].offsetTop;
+                var small = 100;
                 var titleId;
                 for (var i = 0; i < this.positionList[0].length; i++) {
                     var now = this.positionList[0][i].offsetTop;

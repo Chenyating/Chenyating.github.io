@@ -10,34 +10,9 @@ module.exports = {
         //导航栏
         nav: [
             { text: '主页', link: '/' },
-            { text: '论文结果',
-                items: [
-                    { text: 'Android', link: '/android/' },
-                    { text: 'ios', link: '/' },
-                    { text: 'Web', link: '/' }
-                ]
-            },
+            { text: '目录',link:'/android/'},
             { text: '关于', link: '/about/' },
             { text: 'Github', link: 'https://www.github.com/codeteenager' },
-        ],
-        //侧边栏
-        sidebar: {
-            ///android链接下的侧边栏,这里写一个方法，遍历文件所有目录
-            '/android/': [
-                //文件目录
-                "",
-                "hi",
-                "hello",
-            ]
-        },
-        // sidebar: 'auto',
-        sidebarDepth: 3,//侧边栏显示到多少级的标题
-        lastUpdated: 'Last Updated',
-        search: true,
-        searchMaxSuggestions: 10,
-        algolia: {
-            apiKey: '<API_KEY>',
-            indexName: '<INDEX_NAME>'
-          }
+        ]
     }
 }

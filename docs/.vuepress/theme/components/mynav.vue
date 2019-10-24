@@ -36,7 +36,8 @@ export default {
     },
     methods: {
         goPage(link) {
-            this.$router.push(link);
+            // this.$router.push(link);
+            this.$router.push(link).catch(err => { })
             this.searchKey=null;
         },
         // 处理header到一个列表里
