@@ -1,21 +1,15 @@
 <template>
 <div class="all-box">
     <mynav/>
-    <div class="content-box">
-        <mdContent/>
-        <Catalog id="catalog" />
-    </div>
+    <mdContent/>
 </div>
 </template>
-
 <script>
 import mynav from "../components/mynav.vue";
-import Catalog from "../components/catalog.vue";
 import mdContent from "../components/mdContent.vue";
 export default {
     components: {
         mynav,
-        Catalog,
         mdContent,
     },
     methods: {

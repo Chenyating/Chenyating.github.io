@@ -609,8 +609,9 @@ js：
 ```
 2、img绘制到canvas不清晰的解决方法：
 
+```js
     <canvas width="320" height="180" style="width:160px;height:90px;"></canvas>
-
+```
 canvas的内容放大到两倍，以img的形式展示1倍；
 
 绘制到canvas的图片绝对清晰；
