@@ -1,10 +1,11 @@
 <template>
 <div class="content-box">
     <Content class="content" />
-    <div class="catalog ">
+    <!-- <div class="catalog ">
         <a class="level1" :href="'#'+$page.title.replace(/\s+/g,'-').toLowerCase()">{{$page.title}}</a>
         <a :class="[item.level==2?'level2':'level3',{'select':item.slug==selectTitle}]" v-for="(item,index) in $page.headers" :key="index" :href="'#'+item.slug" nofollow>{{item.title}}</a>
-    </div>
+    </div> -->
+    <div id="gitalk-container"></div>
 </div>
 </template>
 
@@ -48,6 +49,17 @@ export default {
     mounted() {
         this.clickTitle();
         this.scrollTitle();
+        var gitalk = new Gitalk({
+            clientID: '5b8613cfe15e02db85b7',
+            clientSecret: 'd4129094c33b8da73e873470fb89aea53dfaf396',
+            repo: 'Chenyating.github.io',
+            owner: 'Chenyating',
+            admin: ['Chenyating'],
+            id: location.pathname, // Ensure uniqueness and length less than 50
+            // distractionFreeMode: false // Facebook-like distraction free mode
+        })
+
+        gitalk.render('gitalk-container')
     }
 }
 </script>

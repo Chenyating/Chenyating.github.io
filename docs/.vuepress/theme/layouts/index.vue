@@ -1,7 +1,7 @@
 <template>
     <div>
         <mynav/>
-        <div class="haha">我的地盘我做主</div>
+            <div id="gitalk-container"></div>
     </div>
 </template>
 <script>
