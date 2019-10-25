@@ -3,7 +3,7 @@
     <Content class="content" />
     <div class="catalog ">
         <a class="level1" :href="'#'+$page.title.replace(/\s+/g,'-').toLowerCase()">{{$page.title}}</a>
-        <a :class="[item.level==2?'level2':'level3',{'select':item.title.toLowerCase()==selectTitle.toLowerCase()}]" v-for="(item,index) in $page.headers" :key="index" :href="'#'+item.title.replace(/\s+/g,'-').toLowerCase()" nofollow>{{item.title}}</a>
+        <a :class="[item.level==2?'level2':'level3',{'select':item.slug==selectTitle}]" v-for="(item,index) in $page.headers" :key="index" :href="'#'+item.slug" nofollow>{{item.title}}</a>
     </div>
 </div>
 </template>
@@ -20,7 +20,7 @@ export default {
         // 点击a以后获得改变的hash路由
         clickTitle() {
             window.onhashchange = (e) => {
-                this.selectTitle = decodeURIComponent(location.hash).replace(/-/g, ' ').replace('#', '');
+                this.selectTitle = decodeURIComponent(location.hash).replace('#', '');
             };
         },
         // 路由随鼠标滚动而改变，对应标题列表改变样式
@@ -39,13 +39,12 @@ export default {
                     }
                 }
                 if (titleId >= 0) {
-                    this.selectTitle = decodeURIComponent(this.positionList[0][titleId].hash).replace(/-/g, ' ').replace('#', '');
+                    this.selectTitle = decodeURIComponent(this.positionList[0][titleId].hash).replace('#', '');
                     window.history.replaceState({}, " ", this.positionList[0][titleId]);
                 }
             }
         }
     },
-    filters: {},
     mounted() {
         this.clickTitle();
         this.scrollTitle();

@@ -10,8 +10,8 @@ module.exports = {
         //导航栏
         nav: [
             { text: '主页', link: '/' },
-            { text: '目录',link:'/android/'},
-            { text: '关于', link: '/about/' },
+            { text: '目录',link:'/config/catalog'},
+            { text: '关于', link: '/about' },
             { text: 'Github', link: 'https://www.github.com/codeteenager' },
         ]
     }

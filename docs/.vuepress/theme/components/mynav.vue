@@ -35,8 +35,8 @@ export default {
         }
     },
     methods: {
+        // 跳转页面
         goPage(link) {
-            // this.$router.push(link);
             this.$router.push(link).catch(err => { })
             this.searchKey=null;
         },
@@ -46,7 +46,7 @@ export default {
                 if (element.headers) {
                     var headers = element.headers;
                     headers.forEach((head) => {
-                        var href = head.title.replace(/\s+/g, '-').toLowerCase();
+                        var href = head.slug;
                         var road = element.path + '#' + href;
                         this.headerList.push({
                             road: road,
@@ -60,7 +60,6 @@ export default {
         }
     },
     mounted() {
-        console.log(this.$site.pages)
         this.resolveHeader(this.$site.pages);
         this.navLinkList = this.$site.themeConfig.nav;
     }
