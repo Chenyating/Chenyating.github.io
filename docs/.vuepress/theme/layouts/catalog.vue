@@ -1,6 +1,6 @@
 <template>
 <div>
-    <mynav/>
+    <tingNav/>
     <div class="catalog-box">
         <div class="catalog-item" @click="goArticle(item.path)" v-if="item" v-for="(item,index) in catalogList" :key="index">
             <!-- 标题 -->
@@ -14,10 +14,10 @@
 </div>
 </template>
 <script>
-import mynav from "../components/mynav.vue";
+import tingNav from "../components/tingNav.vue";
 export default {
     components: {
-        mynav
+        tingNav
     },
     name: 'catalog',
     data() {

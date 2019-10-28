@@ -1,14 +1,16 @@
 <template>
     <div>
-        <mynav/>
-            <div id="gitalk-container"></div>
+        <tingNav/>
+        <tingGitalk/>
     </div>
 </template>
 <script>
-import mynav from "../components/mynav.vue";
+import tingNav from "../components/tingNav.vue";
+import tingGitalk from "../components/tingGitalk.vue";
 export default {
     components:{
-        mynav
+        tingNav,
+        tingGitalk
     },
     name:'index'
 }

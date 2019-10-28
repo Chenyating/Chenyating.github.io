@@ -1,16 +1,16 @@
 <template>
 <div class="all-box">
-    <mynav/>
-    <mdContent/>
+    <tingNav/>
+    <tingContent/>
 </div>
 </template>
 <script>
-import mynav from "../components/mynav.vue";
-import mdContent from "../components/mdContent.vue";
+import tingNav from "../components/tingNav.vue";
+import tingContent from "../components/tingContent.vue";
 export default {
     components: {
-        mynav,
-        mdContent,
+        tingNav,
+        tingContent,
     },
     methods: {
     },
