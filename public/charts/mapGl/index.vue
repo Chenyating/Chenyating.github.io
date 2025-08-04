@@ -1,0 +1,33 @@
+<template>
+  <LayoutTool>
+    <v-chart :option="option" autoresize style="width: 100%; height: 100%" />
+  </LayoutTool>
+</template>
+<script setup>
+import { use, registerMap } from 'echarts/core'
+import { MapChart,EffectScatterChart } from 'echarts/charts'
+import { TooltipComponent, VisualMapComponent,LegendComponent } from 'echarts/components'
+import { CanvasRenderer } from 'echarts/renderers'
+import { ref } from 'vue'
+import VChart from 'vue-echarts'
+import { Map3DChart,Scatter3DChart,Bar3DChart } from 'echarts-gl/charts'
+use([
+  MapChart,
+  TooltipComponent,
+  CanvasRenderer,
+  VisualMapComponent,
+  EffectScatterChart,
+  LegendComponent,
+  Map3DChart,
+  Scatter3DChart,
+  Bar3DChart
+])
+
+// 代码块——————————
+import mapInfo from '@/assets/geo/CHN.json' // 地理信息
+import { config } from './config' // echart配置
+import LayoutTool from '../../component/layoutTool.vue'
+registerMap('中国', mapInfo) // 注册地图
+const option = ref(config) // 配置赋值
+// 代码块——————————
+</script>
