@@ -1,5 +1,7 @@
 <template>
   <LayoutTool>
+    当前只做了美国跟中国下钻
+    <el-divider />
     <el-button type="primary" @click="setMap(1)">亚洲为中心</el-button>
     <el-button type="primary" @click="setMap(2)">默认地图</el-button>
     <el-breadcrumb>

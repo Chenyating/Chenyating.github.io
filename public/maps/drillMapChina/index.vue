@@ -1,5 +1,7 @@
 <template>
   <LayoutTool>
+    当前只做了广东跟福建下钻
+    <el-divider />
     <el-breadcrumb>
       <el-breadcrumb-item
         v-for="(item, index) in levelHistory"
