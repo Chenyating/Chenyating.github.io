@@ -1,5 +1,5 @@
 <template>
-  <uploadExcel title="行转列" @parsed-data-updated="handleParsedDataUpdated">
+  <uploadExcel title="列转行" @parsed-data-updated="handleParsedDataUpdated">
     <template #default>
       <el-tooltip placement="bottom" effect="light">
         <template #content>
@@ -8,22 +8,22 @@
             <el-input
               v-model.number="startRow"
               type="number"
-              placeholder="开始行"
+              placeholder="开始列"
               :disabled="convertAll"
               min="1"
             />
             <el-input
               v-model.number="endRow"
               type="number"
-              placeholder="结束行"
+              placeholder="结束列"
               :disabled="convertAll"
               min="1"
             />
           </div>
         </template>
-        <el-button type="primary" @click="rowToCol">行转列转换预览</el-button>
+        <el-button type="primary" @click="colToRow">列转行转换预览</el-button>
       </el-tooltip>
-      <el-button type="primary" @click="download">行转列转换下载</el-button>
+      <el-button type="primary" @click="download">列转行转换下载</el-button>
     </template>
   </uploadExcel>
   <preview :parsedData="previewData" v-model="showOriginalFile" />
@@ -46,7 +46,7 @@ const showOriginalFile = ref(false)
 const handleParsedDataUpdated = (data) => {
   dataList.value = data?.parsedData ?? []
 }
-const rowToCol = () => {
+const colToRow = () => {
   if (!Array.isArray(dataList.value) || dataList.value.length === 0) {
     ElMessage.warning('请先上传并解析文件')
     return
@@ -89,18 +89,18 @@ const rowToCol = () => {
   const multipleFiles = dataList.value.length > 1
   const nextPreviewData = []
 
-  // 校验行范围（如果不是全量转换）
-  let sr = 1
-  let er = Number.MAX_SAFE_INTEGER
+  // 校验列范围（如果不是全量转换）
+  let sc = 1
+  let ec = Number.MAX_SAFE_INTEGER
   if (!convertAll.value) {
-    sr = Number(startRow.value)
-    er = Number(endRow.value)
-    if (!Number.isInteger(sr) || !Number.isInteger(er) || sr < 1 || er < 1) {
-      ElMessage.error('请输入有效的开始行和结束行（正整数）')
+    sc = Number(startRow.value)
+    ec = Number(endRow.value)
+    if (!Number.isInteger(sc) || !Number.isInteger(ec) || sc < 1 || ec < 1) {
+      ElMessage.error('请输入有效的开始列和结束列（正整数）')
       return
     }
-    if (sr > er) {
-      ElMessage.error('开始行不能大于结束行')
+    if (sc > ec) {
+      ElMessage.error('开始列不能大于结束列')
       return
     }
   }
@@ -112,24 +112,28 @@ const rowToCol = () => {
     )
     const sheets = Array.isArray(fileGroup.sheets) ? fileGroup.sheets : []
     const filePreview = {
-      fileName: `${fileBaseName}-行转列`,
+      fileName: `${fileBaseName}-列转行`,
       sheets: [],
     }
     sheets.forEach((sheet) => {
       const original = Array.isArray(sheet?.data) ? sheet.data : []
-      let sliced = original
+      let slicedByColumns = original
       if (!convertAll.value) {
         const maxRows = original.length
         if (maxRows === 0) {
-          sliced = []
+          slicedByColumns = []
         } else {
-          const startIdx = Math.max(0, Math.min(maxRows - 1, sr - 1))
-          const endIdx = Math.max(startIdx, Math.min(maxRows - 1, er - 1))
-          sliced = original.slice(startIdx, endIdx + 1)
+          const startColIdx = Math.max(0, sc - 1)
+          const endColIdx = ec - 1
+          slicedByColumns = original.map((row) => {
+            const safeRow = Array.isArray(row) ? row : []
+            const finalEnd = Math.max(startColIdx, Math.min(safeRow.length - 1, endColIdx))
+            return safeRow.slice(startColIdx, finalEnd + 1)
+          })
         }
       }
 
-      const transposed = transposeAoA(sliced)
+      const transposed = transposeAoA(slicedByColumns)
       const ws = XLSX.utils.aoa_to_sheet(transposed)
       const candidate = multipleFiles
         ? `${fileBaseName}_${sheet?.name ?? 'Sheet'}`
