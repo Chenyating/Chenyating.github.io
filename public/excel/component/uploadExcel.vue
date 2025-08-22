@@ -24,7 +24,7 @@
     >
       <el-icon><upload-filled /></el-icon>
       <div>将文件拖到此处，或<em>点击上传</em></div>
-      <div>支持多个 .xlsx 和 .xls 格式文件</div>
+      <div>支持{{ single ? '单个' : '多个' }} .xlsx 和 .xls 格式文件</div>
     </el-upload>
 
     <!-- 文件列表显示 -->
@@ -84,11 +84,15 @@ const props = defineProps({
   },
   accept: {
     type: String,
-    default: '.xlsx,.xls',
+    default: '.xlsx,.xls,.csv',
   },
   maxSizeMB: {
     type: Number,
     default: 10,
+  },
+  single: {
+    type: Boolean,
+    default: false,
   },
 })
 
@@ -101,7 +105,6 @@ const showOriginalFile = ref(false)
 // 定义 emit 事件
 const emit = defineEmits([
   'parsed-data-updated', // 解析数据更新时触发
-  'file-uploaded', // 选择文件时触发
 ])
 
 const btnShowOriginalFile = () => {
@@ -110,6 +113,11 @@ const btnShowOriginalFile = () => {
 
 // 方法
 const handleFileChange = (uploadFile) => {
+  if (props.single && fileList.value.length > 0) {
+    ElMessage.warning('只能上传一个文件')
+    return
+  }
+
   if (!uploadFile) return
 
   // 类型校验
@@ -138,11 +146,6 @@ const handleFileChange = (uploadFile) => {
   }
 
   fileList.value.push(uploadFile)
-  emit('file-uploaded', {
-    file: uploadFile,
-    fileList: fileList.value,
-    totalFiles: fileList.value.length,
-  })
 }
 
 const handleFileRemove = (file) => {
@@ -319,6 +322,7 @@ const readExcelFile = (file) => {
 <style scoped>
 .excel-upload-container {
   padding: 20px;
+  width: 100%;
 }
 
 .upload-area {

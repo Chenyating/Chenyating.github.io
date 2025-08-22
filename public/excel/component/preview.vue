@@ -1,7 +1,10 @@
 <template>
   <el-drawer size="50%" :title="title" v-model="drawerVisible">
     <!-- 解析结果显示 -->
-    <el-collapse accordion>
+    <el-collapse 
+      accordion 
+      v-model="activeCollapseItem"
+    >
       <el-collapse-item
         v-for="(fileData, fileIndex) in parsedData"
         :key="fileIndex"
@@ -15,12 +18,12 @@
             :label="sheet.name"
             :name="String(sheetIndex)"
           >
-            <span>行数：{{ sheet.data.length }}</span>
-            <span
-              >列数：{{
+            <div class="sheet-info">
+              <span class="info-item">行数：{{ sheet.data.length }}</span>
+              <span class="info-item">列数：{{
                 sheet.maxColumns || (sheet.data[0] ? sheet.data[0].length : 0)
-              }}</span
-            >
+              }}</span>
+            </div>
             <el-table
               :data="sheet.data.slice(0, 10)"
               border
@@ -42,8 +45,8 @@
             </el-table>
             <div v-if="sheet.data.length > 10" class="data-note">
               注：仅显示前10行数据，共{{ sheet.data.length }}行
-            </div></el-tab-pane
-          >
+            </div>
+          </el-tab-pane>
         </el-tabs>
       </el-collapse-item>
     </el-collapse>
@@ -51,7 +54,7 @@
 </template>
 
 <script setup>
-import { computed, reactive, watch } from 'vue'
+import { computed, reactive, watch, ref } from 'vue'
 
 const props = defineProps({
   parsedData: {
@@ -76,6 +79,16 @@ const drawerVisible = computed({
 })
 
 const activeTabMap = reactive({})
+const activeCollapseItem = ref(null)
+
+// 当只有一个文件时，默认展开第一个文件
+const setDefaultActiveCollapse = () => {
+  if (props.parsedData.length === 1) {
+    activeCollapseItem.value = 0
+  } else {
+    activeCollapseItem.value = null
+  }
+}
 
 const rebuildActiveTabsFromParsedData = () => {
   const next = {}
@@ -85,6 +98,9 @@ const rebuildActiveTabsFromParsedData = () => {
   // 覆盖式更新，确保响应式
   Object.keys(activeTabMap).forEach((k) => delete activeTabMap[k])
   Object.keys(next).forEach((k) => (activeTabMap[k] = next[k]))
+  
+  // 设置默认展开状态
+  setDefaultActiveCollapse()
 }
 
 watch(
@@ -93,3 +109,27 @@ watch(
   { immediate: true, deep: true }
 )
 </script>
+
+<style scoped>
+.sheet-info {
+  margin-bottom: 16px;
+  display: flex;
+  gap: 20px;
+}
+
+.info-item {
+  color: #606266;
+  font-size: 14px;
+}
+
+.data-table {
+  margin-bottom: 16px;
+}
+
+.data-note {
+  color: #909399;
+  font-size: 12px;
+  text-align: center;
+  padding: 8px 0;
+}
+</style>
