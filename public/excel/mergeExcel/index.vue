@@ -1,5 +1,5 @@
 <template>
-  <uploadExcel title="行转列" @parsed-data-updated="handleParsedDataUpdated">
+  <uploadExcel title="合并文件" @parsed-data-updated="handleParsedDataUpdated">
     <template #default>
       <el-button type="primary" @click="rowToCol">文件预览</el-button>
       <el-button type="primary" @click="download">下载文件</el-button>
@@ -67,6 +67,9 @@ const rowToCol = () => {
     sheets: [],
   }
 
+  // 收集所有工作表信息用于总览表
+  const sheetInfoList = []
+
   dataList.value.forEach((fileGroup) => {
     const fileBaseName = String(fileGroup.fileName || 'Excel').replace(
       /\.(xlsx|xls)$/i,
@@ -84,6 +87,13 @@ const rowToCol = () => {
         sanitizeSheetName(candidate),
         usedSheetNames
       )
+
+      // 保存工作表信息
+      sheetInfoList.push({
+        name: safeName,
+        originalFileName: fileGroup.fileName,
+      })
+
       const maxColumns = transposed.reduce(
         (max, row) => Math.max(max, Array.isArray(row) ? row.length : 0),
         0
@@ -97,12 +107,60 @@ const rowToCol = () => {
     })
   })
 
+  // 创建总览工作表
+  if (sheetInfoList.length > 0) {
+    // 创建总览数据
+    const overviewData = [
+      ['序号', '点击即可跳转对应的表'],
+      ...sheetInfoList.map((sheet, index) => [index + 1, `#${sheet.name}!A1`]),
+    ]
+
+    // 创建总览工作表
+    const overviewSheet = XLSX.utils.aoa_to_sheet(overviewData)
+
+    // 为跳转链接添加超链接
+    sheetInfoList.forEach((sheet, index) => {
+      const cellRef = `B${index + 2}` // 跳转链接在B列，从第2行开始（第1行是表头）
+      overviewSheet[cellRef] = {
+        v: ` ${sheet.name}`, // 显示文本
+        l: { Target: `#'${sheet.name}'!A1`, Tooltip: ` ${sheet.name}` },
+        s: {
+          font: {
+            color: { rgb: '0000FF' }, // 蓝色字体
+            underline: true, // 下划线
+            sz: 11, // 字体大小
+          },
+          alignment: { horizontal: 'center', vertical: 'center' },
+        },
+      }
+    })
+
+    // 将总览表插入到最前面
+    XLSX.utils.book_append_sheet(workbook.value, overviewSheet, '总览')
+
+    // 调整工作表顺序，使"总览"成为第一个工作表
+    workbook.value.SheetNames = ['总览', ...sheetInfoList.map((s) => s.name)]
+
+    // 添加总览到预览数据的开头
+    const overviewPreviewData = {
+      name: '总览',
+      data: overviewData,
+      maxColumns: 2,
+    }
+
+    mergedPreview.sheets.unshift(overviewPreviewData)
+  }
+
   previewData.value = [mergedPreview]
   showOriginalFile.value = true
 }
 
 const download = () => {
-  if (!workbook.value || !Array.isArray(workbook.value.SheetNames) || workbook.value.SheetNames.length === 0) {
+  if (
+    !workbook.value ||
+    !Array.isArray(workbook.value.SheetNames) ||
+    workbook.value.SheetNames.length === 0
+  ) {
     ElMessage.warning('请先生成预览后再下载')
     return
   }
