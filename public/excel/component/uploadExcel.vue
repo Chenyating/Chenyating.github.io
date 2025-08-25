@@ -256,10 +256,41 @@ const readExcelFile = (file) => {
     reader.onload = (e) => {
       try {
         const data = new Uint8Array(e.target.result)
-        const workbook = XLSX.read(data, { type: 'array' })
+        // 添加日期解析选项
+        const workbook = XLSX.read(data, { 
+          type: 'array',
+          cellDates: true, // 自动解析日期
+          cellNF: false,   // 不解析数字格式
+          cellText: false  // 不强制转换为文本
+        })
+        
         const sheets = workbook.SheetNames.map((sheetName) => {
           const worksheet = workbook.Sheets[sheetName]
-          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 })
+          
+          // 获取单元格格式信息，用于识别日期列
+          const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1')
+          const dateColumns = new Set()
+          
+          // 检查每列的第一个非空单元格，判断是否为日期格式
+          for (let col = range.s.c; col <= range.e.c; col++) {
+            const colLetter = XLSX.utils.encode_col(col)
+            for (let row = range.s.r; row <= range.e.r; row++) {
+              const cellAddress = colLetter + (row + 1)
+              const cell = worksheet[cellAddress]
+              if (cell && cell.t === 'd') { // 日期类型
+                dateColumns.add(col)
+                break
+              }
+            }
+          }
+          
+          // 使用自定义的日期处理选项解析数据
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
+            header: 1,
+            raw: false, // 保持原始值，不强制转换
+            dateNF: 'yyyy-mm-dd' // 日期格式
+          })
+          
           // 过滤空行
           const filteredData = jsonData.filter((row) =>
             row.some(
@@ -274,10 +305,31 @@ const readExcelFile = (file) => {
             (max, row) => Math.max(max, row.length),
             0
           )
+          
           const normalizedData = filteredData.map((row) => {
             const normalizedRow = new Array(maxColumns)
             for (let i = 0; i < maxColumns; i += 1) {
-              const cellValue = row[i]
+              let cellValue = row[i]
+              
+              // 处理日期单元格
+              if (dateColumns.has(i) && cellValue) {
+                // 如果是日期对象，转换为标准格式字符串
+                if (cellValue instanceof Date) {
+                  cellValue = formatDate(cellValue)
+                } else if (typeof cellValue === 'number') {
+                  // Excel日期是1900年1月1日以来的天数
+                  const excelDate = cellValue
+                  const date = convertExcelDateToJSDate(excelDate)
+                  cellValue = formatDate(date)
+                } else if (typeof cellValue === 'string') {
+                  // 尝试解析日期字符串
+                  const parsedDate = parseDateString(cellValue)
+                  if (parsedDate) {
+                    cellValue = formatDate(parsedDate)
+                  }
+                }
+              }
+              
               normalizedRow[i] =
                 cellValue === undefined || cellValue === null ? '' : cellValue
             }
@@ -288,6 +340,7 @@ const readExcelFile = (file) => {
             name: sheetName,
             data: normalizedData,
             maxColumns,
+            dateColumns: Array.from(dateColumns)
           }
         }).filter(Boolean)
 
@@ -315,6 +368,68 @@ const readExcelFile = (file) => {
       reject(new Error('无法读取文件'))
     }
   })
+}
+
+// 格式化日期为统一格式
+const formatDate = (date) => {
+  if (!(date instanceof Date) || isNaN(date.getTime())) {
+    return ''
+  }
+  
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  
+  return `${year}-${month}-${day}`
+}
+
+// 将Excel日期数字转换为JavaScript Date对象
+const convertExcelDateToJSDate = (excelDate) => {
+  // Excel日期从1900年1月1日开始计算
+  // 注意：Excel错误地将1900年当作闰年，所以1900年3月1日之前的日期需要调整
+  const excelEpoch = new Date(1900, 0, 1)
+  const millisecondsPerDay = 24 * 60 * 60 * 1000
+  
+  // 调整1900年闰年错误
+  let adjustedDays = excelDate
+  if (excelDate > 59) {
+    adjustedDays = excelDate - 1
+  }
+  
+  const date = new Date(excelEpoch.getTime() + adjustedDays * millisecondsPerDay)
+  return date
+}
+
+// 解析各种日期字符串格式
+const parseDateString = (dateString) => {
+  if (!dateString || typeof dateString !== 'string') {
+    return null
+  }
+  
+  // 尝试多种日期格式
+  const dateFormats = [
+    /^\d{4}-\d{1,2}-\d{1,2}$/,           // YYYY-MM-DD
+    /^\d{1,2}\/\d{1,2}\/\d{4}$/,         // MM/DD/YYYY
+    /^\d{1,2}-\d{1,2}-\d{4}$/,           // MM-DD-YYYY
+    /^\d{4}\/\d{1,2}\/\d{1,2}$/,         // YYYY/MM/DD
+    /^\d{1,2}\.\d{1,2}\.\d{4}$/,         // MM.DD.YYYY
+    /^\d{4}\.\d{1,2}\.\d{1,2}$/          // YYYY.MM.DD
+  ]
+  
+  for (const format of dateFormats) {
+    if (format.test(dateString)) {
+      try {
+        const date = new Date(dateString)
+        if (!isNaN(date.getTime())) {
+          return date
+        }
+      } catch (e) {
+        // 继续尝试下一个格式
+      }
+    }
+  }
+  
+  return null
 }
 
 </script>
