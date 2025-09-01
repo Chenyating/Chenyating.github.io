@@ -31,7 +31,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import 'highlight.js/lib/common'
 import hljsVuePlugin from '@highlightjs/vue-plugin'
-import { ElMessage } from 'element-plus'
+import { copyDownloadUrl } from '@/utils/base'
 
 const router = useRouter()
 const highlightjs = hljsVuePlugin.component
@@ -58,23 +58,6 @@ const loadFile = async () => {
   } else {
     showCode.value = false
   }
-}
-
-const copyDownloadUrl = (str: string) => {
-  navigator.clipboard
-    .writeText(str)
-    .then(() => {
-      ElMessage({
-        message: '复制成功',
-        type: 'success',
-      })
-    })
-    .catch((err) => {
-      ElMessage({
-        message: '复制失败',
-        type: 'error',
-      })
-    })
 }
 </script>
 

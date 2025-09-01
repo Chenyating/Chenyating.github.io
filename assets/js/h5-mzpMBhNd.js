@@ -1,0 +1,1 @@
+import{_ as o}from"./h5-Du-9TEcE.js";import{cQ as t,d7 as r,e5 as c,cR as s}from"./vue-vendor-DaheGaRj.js";import"./element-plus-sep_5ZKu.js";const n={},_={class:"h5-layout"};function a(i,m){const e=c("router-view");return s(),t("div",_,[r(e)])}const l=o(n,[["render",a]]);export{l as default};

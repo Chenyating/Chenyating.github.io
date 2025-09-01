@@ -59,18 +59,22 @@
             <div class="stat-item">
               <span class="stat-label">完全相似：</span>
               <span class="stat-value success">{{ exactMatch.length }}</span>
+              <el-icon @click="copyDownloadUrl(exactMatch)"><CopyDocument /></el-icon>
             </div>
             <div class="stat-item">
               <span class="stat-label">部分相似：</span>
               <span class="stat-value warning">{{ partialMatch.length }}</span>
+              <el-icon @click="copyDownloadUrl(partialMatch)"><CopyDocument /></el-icon>
             </div>
             <div class="stat-item">
               <span class="stat-label">左侧无匹配：</span>
               <span class="stat-value danger">{{ noMatchLeft.length }}</span>
+              <el-icon @click="copyDownloadUrl(noMatchLeft)"><CopyDocument /></el-icon>
             </div>
             <div class="stat-item">
               <span class="stat-label">右侧无匹配：</span>
               <span class="stat-value danger">{{ noMatchRight.length }}</span>
+              <el-icon @click="copyDownloadUrl(noMatchRight)"><CopyDocument /></el-icon>
             </div>
           </div>
         </div>
@@ -121,7 +125,8 @@ import {
   ElTable,
   ElTableColumn,
 } from 'element-plus'
-import { Check, Warning, Close } from '@element-plus/icons-vue'
+import { CopyDocument } from '@element-plus/icons-vue'
+import { copyDownloadUrl } from '@/utils/base'
 
 // 响应式数据
 const leftFields = ref('')
