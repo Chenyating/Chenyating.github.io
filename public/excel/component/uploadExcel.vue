@@ -284,6 +284,37 @@ const readExcelFile = (file) => {
             }
           }
           
+          // 处理合并单元格
+          const processMergedCells = (data) => {
+            if (!data || data.length === 0) return data
+            
+            const processedData = []
+            
+            // 逐列处理合并单元格
+            for (let col = 0; col < data[0].length; col++) {
+              let lastValue = null
+              
+              for (let row = 0; row < data.length; row++) {
+                if (!processedData[row]) {
+                  processedData[row] = [...data[row]]
+                }
+                
+                const cellValue = data[row][col]
+                
+                // 如果当前单元格为空，使用上一个非空值
+                if (cellValue === null || cellValue === undefined || cellValue === '') {
+                  if (lastValue !== null) {
+                    processedData[row][col] = lastValue
+                  }
+                } else {
+                  lastValue = cellValue
+                }
+              }
+            }
+            
+            return processedData
+          }
+          
           // 使用自定义的日期处理选项解析数据
           const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
             header: 1,
@@ -336,9 +367,12 @@ const readExcelFile = (file) => {
             return normalizedRow
           })
 
+          // 处理合并单元格
+          const finalData = processMergedCells(normalizedData)
+
           return {
             name: sheetName,
-            data: normalizedData,
+            data: finalData,
             maxColumns,
             dateColumns: Array.from(dateColumns)
           }
