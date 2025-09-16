@@ -1,16 +1,16 @@
 <template>
-  <el-steps :active="stepList.length" simple>
-    <el-step v-for="(item, index) in stepList" :title="item.title" :key="index">
-      <template #icon>
-        <cube-icon
-          :name="item.icon"
-          size="1.5rem"
-          type="png"
-          color="lightblue"
-        />
-      </template>
-    </el-step>
-  </el-steps>
+  <div class="steps">
+    <span>{{ desc }}</span>
+    <el-steps :active="-1" align-center>
+      <el-step
+        v-for="(item, index) in stepList"
+        :title="item.title"
+        :key="index"
+        :description="item.desc"
+      >
+      </el-step>
+    </el-steps>
+  </div>
 </template>
 <script setup lang="ts">
 const props: any = defineProps({
@@ -18,10 +18,17 @@ const props: any = defineProps({
     type: Object,
     required: true,
   },
+  desc: {
+    type: String,
+    default: '',
+  },
 })
 </script>
 <style scoped lang="scss">
-.el-steps--simple{
+.steps {
+  text-align: center;
+}
+.el-steps--simple {
   background-color: transparent;
 }
 </style>

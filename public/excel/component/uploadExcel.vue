@@ -49,6 +49,7 @@
         <el-button-group>
           <el-button
             type="primary"
+            v-show="!single"
             @click="parseAllFiles"
             :loading="loading"
             :disabled="fileList.length === 0"
@@ -113,11 +114,6 @@ const btnShowOriginalFile = () => {
 
 // 方法
 const handleFileChange = (uploadFile) => {
-  if (props.single && fileList.value.length > 0) {
-    ElMessage.warning('只能上传一个文件')
-    return
-  }
-
   if (!uploadFile) return
 
   // 类型校验
@@ -136,7 +132,17 @@ const handleFileChange = (uploadFile) => {
     return
   }
 
-  // 去重：同名且大小一致视为重复，或 uid 已存在
+  if (props.single) {
+    // 单文件模式：如果已有文件则替换为新文件
+    fileList.value = [uploadFile]
+    parsedData.value = []
+    ElMessage.success(`已替换文件为 ${uploadFile.name}`)
+    // 自动解析
+    parseAllFiles()
+    return
+  }
+
+  // 多文件模式下的去重逻辑：同名且大小一致视为重复，或 uid 已存在
   const duplicated = fileList.value.some(
     (f) => (f.uid && f.uid === uploadFile.uid) || (f.name === uploadFile.name && (f.size || f.raw?.size) === sizeBytes)
   )

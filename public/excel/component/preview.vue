@@ -11,43 +11,57 @@
         :title="fileData.fileName"
         :name="fileIndex"
       >
-        <el-tabs v-model="activeTabMap[fileIndex]">
-          <el-tab-pane
-            v-for="(sheet, sheetIndex) in fileData.sheets"
-            :key="sheetIndex"
-            :label="sheet.name"
-            :name="String(sheetIndex)"
-          >
-            <div class="sheet-info">
-              <span class="info-item">行数：{{ sheet.data.length }}</span>
-              <span class="info-item">列数：{{
-                sheet.maxColumns || (sheet.data[0] ? sheet.data[0].length : 0)
-              }}</span>
-            </div>
-            <el-table
-              :data="sheet.data.slice(0, 10)"
-              border
-              class="data-table"
-              max-height="300"
+        <!-- Excel 预览模式 -->
+        <template v-if="fileData.sheets && Array.isArray(fileData.sheets)">
+          <el-tabs v-model="activeTabMap[fileIndex]">
+            <el-tab-pane
+              v-for="(sheet, sheetIndex) in fileData.sheets"
+              :key="sheetIndex"
+              :label="sheet.name"
+              :name="String(sheetIndex)"
             >
-              <el-table-column
-                v-for="colIndex in sheet.maxColumns ||
-                (sheet.data[0] ? sheet.data[0].length : 0)"
-                :key="colIndex - 1"
-                :prop="(colIndex - 1).toString()"
-                :label="`列${colIndex}`"
-                min-width="120"
+              <div class="sheet-info">
+                <span class="info-item">行数：{{ sheet.data.length }}</span>
+                <span class="info-item">列数：{{
+                  sheet.maxColumns || (sheet.data[0] ? sheet.data[0].length : 0)
+                }}</span>
+              </div>
+              <el-table
+                :data="sheet.data.slice(0, 50)"
+                border
+                class="data-table"
+                max-height="300"
               >
-                <template #default="scope">
-                  {{ scope.row[colIndex - 1] ?? '' }}
-                </template>
-              </el-table-column>
-            </el-table>
-            <div v-if="sheet.data.length > 10" class="data-note">
-              注：仅显示前10行数据，共{{ sheet.data.length }}行
-            </div>
-          </el-tab-pane>
-        </el-tabs>
+                <el-table-column
+                  v-for="colIndex in sheet.maxColumns ||
+                  (sheet.data[0] ? sheet.data[0].length : 0)"
+                  :key="colIndex - 1"
+                  :prop="(colIndex - 1).toString()"
+                  :label="`列${colIndex}`"
+                  min-width="120"
+                >
+                  <template #default="scope">
+                    {{ scope.row[colIndex - 1] ?? '' }}
+                  </template>
+                </el-table-column>
+              </el-table>
+              <div v-if="sheet.data.length > 50" class="data-note">
+                注：仅显示前10行数据，共{{ sheet.data.length }}行
+              </div>
+            </el-tab-pane>
+          </el-tabs>
+        </template>
+
+        <!-- JSON 预览模式 -->
+        <template v-else>
+          <el-input
+            type="textarea"
+            :rows="16"
+            :model-value="formatJson(fileData.content)"
+            readonly
+            class="json-textarea"
+          />
+        </template>
       </el-collapse-item>
     </el-collapse>
   </el-drawer>
@@ -108,6 +122,14 @@ watch(
   () => rebuildActiveTabsFromParsedData(),
   { immediate: true, deep: true }
 )
+
+const formatJson = (obj) => {
+  try {
+    return JSON.stringify(obj, null, 2)
+  } catch (e) {
+    return String(obj)
+  }
+}
 </script>
 
 <style scoped>
@@ -131,5 +153,10 @@ watch(
   font-size: 12px;
   text-align: center;
   padding: 8px 0;
+}
+
+.json-textarea :deep(textarea) {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 12px;
 }
 </style>

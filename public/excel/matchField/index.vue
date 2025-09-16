@@ -1,126 +1,98 @@
 <template>
+  <h2 style="text-align: center; margin: 10px">Excel指定字段替换</h2>
+  <steps
+    :stepList="stepList"
+    desc="这个工具用于，将Excel中的某行或某列的字段或sheet名替换为字典中的value，以便于知道每个数值表达的中文意思"
+  />
+  <div class="toolbar">
+    <el-button-group>
+      <el-tooltip placement="bottom" effect="light">
+        <template #content>
+          <div>
+            <el-radio-group v-model="dataSelectionMode">
+              <el-radio label="row">替换行</el-radio>
+              <el-radio label="column">替换列</el-radio>
+            </el-radio-group>
+            <div v-if="dataSelectionMode === 'row'" style="margin-top: 10px">
+              替换行号：
+              <el-input
+                v-model.number="dataStartRow"
+                type="number"
+                placeholder="要替换的行号"
+                min="1"
+              />
+            </div>
+            <div v-if="dataSelectionMode === 'column'" style="margin-top: 10px">
+              替换列号：
+              <el-input
+                v-model.number="dataStartColumn"
+                type="number"
+                placeholder="要替换的列号"
+                min="1"
+              />
+            </div>
+          </div>
+        </template>
+        <el-button type="primary" @click="replaceField"
+          >替换单元格预览</el-button
+        >
+      </el-tooltip>
+      <el-button v-if="previewData.length > 0" type="primary" @click="download"
+        >替换单元格下载</el-button
+      >
+    </el-button-group>
+    <el-button-group>
+      <el-button type="primary" @click="replaceSheetName"
+        >替换sheet名预览</el-button
+      >
+      <el-button
+        v-if="previewData.length > 0"
+        type="primary"
+        @click="downloadSheetName"
+        >替换sheet名下载</el-button
+      >
+    </el-button-group>
+  </div>
   <div style="display: flex; gap: 10px">
+    <uploadField
+      title="字典清单"
+      :show-dict-upload="true"
+      @field-event="handleFieldEvent"
+    />
     <uploadExcel
       single
       title="数据清单"
+      :show-dict-upload="false"
       @parsed-data-updated="handleDataListUpdated"
     >
-      <template #default>
-        <el-tooltip placement="bottom" effect="light">
-          <template #content>
-            <div>
-              <el-radio-group v-model="dataSelectionMode">
-                <el-radio label="row">替换行</el-radio>
-                <el-radio label="column">替换列</el-radio>
-              </el-radio-group>
-              <div v-if="dataSelectionMode === 'row'" style="margin-top: 10px">
-                替换行号：
-                <el-input
-                  v-model.number="dataStartRow"
-                  type="number"
-                  placeholder="要替换的行号"
-                  min="1"
-                />
-              </div>
-              <div
-                v-if="dataSelectionMode === 'column'"
-                style="margin-top: 10px"
-              >
-                替换列号：
-                <el-input
-                  v-model.number="dataStartColumn"
-                  type="number"
-                  placeholder="要替换的列号"
-                  min="1"
-                />
-              </div>
-            </div>
-          </template>
-          <el-button type="primary" @click="replaceField">替换预览</el-button>
-        </el-tooltip>
-        <el-button
-          v-if="previewData.length > 0"
-          type="primary"
-          @click="download"
-          >替换下载</el-button
-        >
-      </template>
-    </uploadExcel>
-    <uploadExcel
-      single
-      title="字典清单"
-      @parsed-data-updated="handleDictListUpdated"
-    >
-      <template #default>
-        <el-tooltip placement="bottom" effect="light">
-          <template #content>
-            <div>
-              <el-radio-group v-model="dictSelectionMode">
-                <el-radio label="row">行选择</el-radio>
-                <el-radio label="column">列选择</el-radio>
-              </el-radio-group>
-              <div v-if="dictSelectionMode === 'row'" style="margin-top: 10px">
-                key行：
-                <el-input
-                  v-model.number="dictStartRow"
-                  type="number"
-                  placeholder="key行"
-                  min="1"
-                />
-                value行：
-                <el-input
-                  v-model.number="dictEndRow"
-                  type="number"
-                  placeholder="value行"
-                  min="1"
-                />
-              </div>
-              <div
-                v-if="dictSelectionMode === 'column'"
-                style="margin-top: 10px"
-              >
-                key列：
-                <el-input
-                  v-model.number="dictStartColumn"
-                  type="number"
-                  placeholder="key列"
-                  min="1"
-                />
-                value列：
-                <el-input
-                  v-model.number="dictEndColumn"
-                  type="number"
-                  placeholder="value列"
-                  min="1"
-                />
-              </div>
-            </div>
-          </template>
-          <el-button type="primary" @click="getKeyValue">生成键值对</el-button>
-        </el-tooltip>
-        <div v-if="keyValuePairs.length > 0">
-          <el-table
-            :data="keyValuePairs"
-            border
-            style="width: 100%; height: 200px"
-          >
-            <el-table-column prop="key" label="Key" width="200" />
-            <el-table-column prop="value" label="Value" />
-          </el-table>
-        </div>
-      </template>
     </uploadExcel>
   </div>
   <preview :parsedData="previewData" v-model="showOriginalFile" />
 </template>
 
 <script setup>
+import steps from '@/view/tools/component/steps.vue'
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import * as XLSX from 'xlsx'
+import uploadField from '../component/uploadField.vue'
 import uploadExcel from '../component/uploadExcel.vue'
 import Preview from '../component/preview.vue'
-
+const stepList = ref([
+  {
+    title: '上传字典清单',
+    desc: '选择指定的sheet生成键对值',
+  },
+  {
+    title: '上传数据清单',
+    desc: '可选择替换sheet名或sheet内指定行或列的字段',
+  },
+  {
+    title: '预览替换结果',
+    desc: '阅览后可下载Excel文件',
+  },
+])
+stepList
 // 数据相关
 const dataList = ref([])
 const dictList = ref([])
@@ -130,17 +102,10 @@ const showOriginalFile = ref(false)
 
 // 字典配置相关
 const dataSelectionMode = ref('row') // 数据清单的替换模式：'row' or 'column'
-const dictSelectionMode = ref('column') // 字典清单的生成模式：'row' or 'column'
 
 // 数据清单替换位置
 const dataStartRow = ref(1)
 const dataStartColumn = ref(1)
-
-// 字典清单生成位置
-const dictStartRow = ref(1)
-const dictEndRow = ref(2)
-const dictStartColumn = ref(1)
-const dictEndColumn = ref(2)
 
 // 处理数据清单更新
 const handleDataListUpdated = (data) => {
@@ -151,119 +116,39 @@ const handleDataListUpdated = (data) => {
 // 处理字典清单更新
 const handleDictListUpdated = (data) => {
   dictList.value = data?.parsedData ?? []
-  keyValuePairs.value = []
 }
 
-// 生成键值对
-const getKeyValue = () => {
-  if (dictList.value.length === 0) {
-    ElMessage.warning('请先上传字典清单文件')
-    return
-  }
+// 处理键值对生成
+const handleKeyValuePairsGenerated = (pairs) => {
+  keyValuePairs.value = pairs
+}
 
-  try {
-    // 获取第一个字典文件的数据
-    const dictFile = dictList.value[0]
-    if (!dictFile || !dictFile.sheets || dictFile.sheets.length === 0) {
-      ElMessage.error('字典文件没有有效数据')
-      return
-    }
+// 处理字段替换完成
+const handleFieldReplacementCompleted = (result) => {
+  previewData.value = [result.replacedData]
+  showOriginalFile.value = true
+  ElMessage.success(`字段替换完成，共替换了 ${result.replacedCount} 个单元格`)
+}
 
-    // 获取第一个工作表的数据
-    const sheetData = dictFile.sheets[0].data
-
-    // 验证设置
-    if (dictSelectionMode.value === 'row') {
-      if (dictStartRow.value < 1 || dictEndRow.value < 1) {
-        ElMessage.error('行数必须大于0')
-        return
-      }
-
-      if (
-        dictStartRow.value > sheetData.length ||
-        dictEndRow.value > sheetData.length
-      ) {
-        ElMessage.error('行数超出文件范围')
-        return
-      }
-    } else {
-      // column selection
-      if (dictStartColumn.value < 1 || dictEndColumn.value < 1) {
-        ElMessage.error('列数必须大于0')
-        return
-      }
-
-      if (
-        dictStartColumn.value > sheetData[0].length ||
-        dictEndColumn.value > sheetData[0].length
-      ) {
-        ElMessage.error('列数超出文件范围')
-        return
-      }
-    }
-
-    // 生成键值对
-    const pairs = []
-    let keyData, valueData
-
-    if (dictSelectionMode.value === 'row') {
-      // 行选择模式：获取指定行的数据
-      keyData = sheetData[dictStartRow.value - 1] // 转换为0索引
-      valueData = sheetData[dictEndRow.value - 1] // 转换为0索引
-
-      // 获取最大列数
-      const maxCols = Math.max(keyData.length, valueData.length)
-
-      for (let i = 0; i < maxCols; i++) {
-        const key = keyData[i] || ''
-        const value = valueData[i] || ''
-
-        // 只添加非空的键值对
-        if (key !== '' && value !== '') {
-          pairs.push({
-            key: String(key),
-            value: String(value),
-          })
-        }
-      }
-    } else {
-      // 列选择模式：获取指定列的数据
-      keyData = sheetData.map((row) => row[dictStartColumn.value - 1]) // 转换为0索引
-      valueData = sheetData.map((row) => row[dictEndColumn.value - 1]) // 转换为0索引
-
-      // 获取最大行数
-      const maxRows = Math.max(keyData.length, valueData.length)
-
-      for (let i = 0; i < maxRows; i++) {
-        const key = keyData[i] || ''
-        const value = valueData[i] || ''
-
-        // 只添加非空的键值对
-        if (key !== '' && value !== '') {
-          pairs.push({
-            key: String(key),
-            value: String(value),
-          })
-        }
-      }
-    }
-
-    keyValuePairs.value = pairs
-
-    if (pairs.length > 0) {
-      ElMessage.success(`成功生成 ${pairs.length} 个键值对`)
-    } else {
-      ElMessage.warning('未找到有效的键值对')
-    }
-
-    console.log('生成的键值对:', pairs)
-  } catch (error) {
-    console.error('生成键值对失败:', error)
-    ElMessage.error('生成键值对时出现错误')
+// 处理统一事件
+const handleFieldEvent = (e) => {
+  const { type, payload } = e || {}
+  switch (type) {
+    case 'dictParsed':
+      handleDictListUpdated(payload)
+      break
+    case 'pairsGenerated':
+      handleKeyValuePairsGenerated(payload)
+      break
+    case 'replacementCompleted':
+      handleFieldReplacementCompleted(payload)
+      break
+    default:
+      break
   }
 }
 
-// 字段替换匹配
+// 字段替换匹配（保留原有逻辑作为备用）
 const replaceField = () => {
   if (dataList.value.length === 0) {
     ElMessage.warning('请先上传数据清单文件')
@@ -416,4 +301,143 @@ const download = () => {
     ElMessage.error('下载文件时出现错误')
   }
 }
+
+// 预览：按字典替换 sheet 名
+const replaceSheetName = () => {
+  if (dataList.value.length === 0) {
+    ElMessage.warning('请先上传数据清单文件')
+    return
+  }
+
+  if (keyValuePairs.value.length === 0) {
+    ElMessage.warning('请先生成键值对')
+    return
+  }
+
+  try {
+    const dataFile = dataList.value[0]
+    if (!dataFile?.sheets?.length) {
+      ElMessage.error('数据文件没有有效的工作表')
+      return
+    }
+
+    // 生成名称映射并统计重命名数量
+    const findMappedName = (oldName) => {
+      const target = keyValuePairs.value.find(
+        (pair) => pair.key === String(oldName)
+      )
+      return target ? String(target.value) : oldName
+    }
+
+    // 处理重复名：确保预览中 sheet 名唯一
+    const usedNames = new Set()
+    const makeUnique = (baseName) => {
+      let name = baseName || 'Sheet'
+      let idx = 1
+      while (usedNames.has(name)) {
+        name = `${baseName || 'Sheet'}(${idx++})`
+      }
+      usedNames.add(name)
+      return name
+    }
+
+    let renameCount = 0
+    const processedSheets = dataFile.sheets.map((sheet) => {
+      const oldName = sheet?.name ?? ''
+      const mapped = findMappedName(oldName)
+      if (mapped !== oldName) renameCount++
+      const uniqueName = makeUnique(mapped)
+      return { ...sheet, name: uniqueName }
+    })
+
+    previewData.value = [{ ...dataFile, sheets: processedSheets }]
+    showOriginalFile.value = true
+
+    if (renameCount === 0) {
+      ElMessage.warning('没有匹配到可替换的 sheet 名')
+    } else {
+      ElMessage.success(
+        `sheet 名替换预览完成，共重命名 ${renameCount} 个工作表`
+      )
+    }
+  } catch (error) {
+    console.error('sheet 名替换预览失败:', error)
+    ElMessage.error('sheet 名替换预览时出现错误')
+  }
+}
+
+// 下载：按字典替换 sheet 名并导出
+const downloadSheetName = () => {
+  if (dataList.value.length === 0) {
+    ElMessage.warning('请先上传数据清单文件')
+    return
+  }
+
+  if (keyValuePairs.value.length === 0) {
+    ElMessage.warning('请先生成键值对')
+    return
+  }
+
+  try {
+    const dataFile = dataList.value[0]
+    if (!dataFile?.sheets?.length) {
+      ElMessage.error('数据文件没有有效的工作表')
+      return
+    }
+
+    const workbook = XLSX.utils.book_new()
+
+    const findMappedName = (oldName) => {
+      const target = keyValuePairs.value.find(
+        (pair) => pair.key === String(oldName)
+      )
+      return target ? String(target.value) : oldName
+    }
+
+    // Excel 工作表名需唯一，构建去重逻辑
+    const usedNames = new Set()
+    const makeUnique = (baseName) => {
+      let name = baseName || 'Sheet'
+      let idx = 1
+      while (usedNames.has(name)) {
+        name = `${baseName || 'Sheet'}(${idx++})`
+      }
+      usedNames.add(name)
+      return name
+    }
+
+    let renameCount = 0
+    dataFile.sheets.forEach((sheet) => {
+      const oldName = sheet?.name ?? ''
+      const mapped = findMappedName(oldName)
+      if (mapped !== oldName) renameCount++
+      const uniqueName = makeUnique(mapped)
+
+      const worksheet = XLSX.utils.aoa_to_sheet(sheet.data || [])
+      XLSX.utils.book_append_sheet(workbook, worksheet, uniqueName)
+    })
+
+    const fileName = `sheet名替换_${dataFile.fileName}`
+    XLSX.writeFile(workbook, fileName)
+    if (renameCount === 0) {
+      ElMessage.success('已下载（未检测到需重命名的工作表）')
+    } else {
+      ElMessage.success(`文件下载成功，重命名 ${renameCount} 个工作表`)
+    }
+  } catch (error) {
+    console.error('sheet 名替换下载失败:', error)
+    ElMessage.error('下载文件时出现错误')
+  }
+}
 </script>
+<style scoped>
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  justify-content: flex-end;
+  margin: 20px;
+}
+</style>
