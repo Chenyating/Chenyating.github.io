@@ -24,7 +24,7 @@
     >
       <el-icon><upload-filled /></el-icon>
       <div>将文件拖到此处，或<em>点击上传</em></div>
-      <div>支持{{ single ? '单个' : '多个' }} .xlsx 和 .xls 格式文件</div>
+      <div>支持{{ single ? '单个' : '多个' }} .xlsx、.xls 和 .csv 格式文件</div>
     </el-upload>
 
     <!-- 文件列表显示 -->
@@ -35,16 +35,6 @@
           清空所有文件
         </el-button>
       </h3>
-      <div class="file-item" v-for="(file, index) in fileList" :key="index">
-        <span class="file-name">{{ file.name }}</span>
-        <span class="file-size">{{ formatFileSize(file.size) }}</span>
-        <el-tag class="file-status" size="small" :type="isFileParsed(file.name) ? 'success' : 'info'">
-          {{ isFileParsed(file.name) ? '已解析' : '未解析' }}
-        </el-tag>
-        <el-button size="small" type="danger" @click="removeFile(index)">
-          删除
-        </el-button>
-      </div>
       <div class="action-buttons">
         <el-button-group>
           <el-button
@@ -64,6 +54,16 @@
             预览已解析的文件
           </el-button>
         </el-button-group>
+      </div>
+      <div class="file-item" v-for="(file, index) in fileList" :key="index">
+        <span class="file-name">{{ file.name }}</span>
+        <span class="file-size">{{ formatFileSize(file.size) }}</span>
+        <el-tag class="file-status" size="small" :type="isFileParsed(file.name, file.uid) ? 'success' : 'info'">
+          {{ isFileParsed(file.name, file.uid) ? '已解析' : '未解析' }}
+        </el-tag>
+        <el-button size="small" type="danger" @click="removeFile(index)">
+          删除
+        </el-button>
       </div>
     </div>
     <Preview title="解析结果" v-model="showOriginalFile" :parsedData="parsedData" />
@@ -234,7 +234,10 @@ const parseAllFiles = async () => {
       })
     }
   } catch (error) {
-    console.error('批量解析失败:', error)
+    // 生产环境可以移除console.error
+    if (process.env.NODE_ENV === 'development') {
+      console.error('批量解析失败:', error)
+    }
     ElMessage.error('批量解析过程中出现错误')
   } finally {
     loading.value = false
@@ -257,20 +260,226 @@ const isFileParsed = (fileName, fileUid) => {
 // 解析excel文件
 const readExcelFile = (file) => {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader()
+    const fileName = file.name.toLowerCase()
+    const isCSV = fileName.endsWith('.csv')
+    
+    if (isCSV) {
+      // 专门处理CSV文件
+      readCSVFile(file, resolve, reject)
+    } else {
+      // 处理Excel文件
+      readExcelFileInternal(file, resolve, reject)
+    }
+  })
+}
 
-    reader.onload = (e) => {
+// 处理CSV文件的专用函数
+const readCSVFile = (file, resolve, reject) => {
+  const reader = new FileReader()
+  
+  reader.onload = (e) => {
+    try {
+      const arrayBuffer = e.target.result
+      const uint8Array = new Uint8Array(arrayBuffer)
+      
+      // 尝试多种编码方式解析CSV
+      const csvText = tryMultipleEncodings(uint8Array)
+      
+      if (!csvText) {
+        reject(new Error('无法识别CSV文件编码，请确保文件为UTF-8或GBK编码'))
+        return
+      }
+      
+      // 使用XLSX解析CSV文本
+      const workbook = XLSX.read(csvText, { 
+        type: 'string',
+        cellDates: true,
+        cellNF: false,
+        cellText: false
+      })
+      
+      processWorkbook(workbook, resolve, reject)
+    } catch (error) {
+      reject(new Error(`读取CSV文件失败: ${error.message}`))
+    }
+  }
+  
+  reader.onerror = () => reject(new Error('CSV文件读取失败'))
+  reader.readAsArrayBuffer(file)
+}
+
+// 处理Excel文件的函数
+const readExcelFileInternal = (file, resolve, reject) => {
+  const reader = new FileReader()
+
+  reader.onload = (e) => {
+    try {
+      const data = new Uint8Array(e.target.result)
+      // 添加日期解析选项
+      const workbook = XLSX.read(data, { 
+        type: 'array',
+        cellDates: true, // 自动解析日期
+        cellNF: false,   // 不解析数字格式
+        cellText: false  // 不强制转换为文本
+      })
+      
+      processWorkbook(workbook, resolve, reject)
+    } catch (error) {
+      reject(new Error(`读取Excel文件失败: ${error.message}`))
+    }
+  }
+
+  reader.onerror = () => reject(new Error('文件读取失败'))
+  try {
+    // 支持传入 ElementPlus 的 uploadFile 或原生 File
+    const rawFile = file?.raw instanceof Blob ? file.raw : file
+    if (!(rawFile instanceof Blob)) {
+      reject(new Error('无效的文件对象'))
+      return
+    }
+    reader.readAsArrayBuffer(rawFile)
+  } catch (err) {
+    reject(new Error('无法读取文件'))
+  }
+}
+
+// 尝试多种编码方式解析CSV文件
+const tryMultipleEncodings = (uint8Array) => {
+  // 定义要尝试的编码列表，按优先级排序
+  const encodings = [
+    'utf-8',
+    'gbk',
+    'gb2312',
+    'big5',
+    'utf-16le',
+    'utf-16be',
+    'iso-8859-1'
+  ]
+  
+  // 首先检查BOM标记
+  if (uint8Array.length >= 3) {
+    // UTF-8 BOM: EF BB BF
+    if (uint8Array[0] === 0xEF && uint8Array[1] === 0xBB && uint8Array[2] === 0xBF) {
       try {
-        const data = new Uint8Array(e.target.result)
-        // 添加日期解析选项
-        const workbook = XLSX.read(data, { 
-          type: 'array',
-          cellDates: true, // 自动解析日期
-          cellNF: false,   // 不解析数字格式
-          cellText: false  // 不强制转换为文本
-        })
-        
-        const sheets = workbook.SheetNames.map((sheetName) => {
+        const decoder = new TextDecoder('utf-8')
+        return decoder.decode(uint8Array.slice(3)) // 跳过BOM
+      } catch (e) {
+        // 继续尝试其他编码
+      }
+    }
+  }
+  
+  if (uint8Array.length >= 2) {
+    // UTF-16 LE BOM: FF FE
+    if (uint8Array[0] === 0xFF && uint8Array[1] === 0xFE) {
+      try {
+        const decoder = new TextDecoder('utf-16le')
+        return decoder.decode(uint8Array.slice(2)) // 跳过BOM
+      } catch (e) {
+        // 继续尝试其他编码
+      }
+    }
+    // UTF-16 BE BOM: FE FF
+    if (uint8Array[0] === 0xFE && uint8Array[1] === 0xFF) {
+      try {
+        const decoder = new TextDecoder('utf-16be')
+        return decoder.decode(uint8Array.slice(2)) // 跳过BOM
+      } catch (e) {
+        // 继续尝试其他编码
+      }
+    }
+  }
+  
+  // 尝试各种编码
+  for (const encoding of encodings) {
+    try {
+      const decoder = new TextDecoder(encoding, { fatal: true })
+      const result = decoder.decode(uint8Array)
+      
+      // 验证解码结果是否合理
+      if (isValidCSVText(result)) {
+        return result
+      }
+    } catch (e) {
+      // 编码不支持或解码失败，继续尝试下一个
+      continue
+    }
+  }
+  
+  // 如果所有编码都失败，尝试使用GBK的替代方案
+  try {
+    return tryGBKAlternative(uint8Array)
+  } catch (e) {
+    // 最后的尝试也失败了
+  }
+  
+  return null
+}
+
+// 验证CSV文本是否合理
+const isValidCSVText = (text) => {
+  if (!text || text.length === 0) return false
+  
+  // 检查是否包含过多的替换字符（通常表示编码错误）
+  const replacementCharCount = (text.match(/\uFFFD/g) || []).length
+  if (replacementCharCount > text.length * 0.1) {
+    return false
+  }
+  
+  // 检查是否包含基本的CSV结构
+  const lines = text.split('\n').slice(0, 10) // 只检查前10行
+  const hasValidStructure = lines.some(line => 
+    line.includes(',') || line.includes(';') || line.includes('\t')
+  )
+  
+  return hasValidStructure
+}
+
+// GBK编码的替代实现（当TextDecoder不支持gbk时）
+const tryGBKAlternative = (uint8Array) => {
+  // 这是一个简化的GBK解码实现
+  // 在实际应用中，可能需要更完整的GBK字符映射表
+  
+  let result = ''
+  let i = 0
+  
+  while (i < uint8Array.length) {
+    const byte = uint8Array[i]
+    
+    if (byte < 0x80) {
+      // ASCII字符
+      result += String.fromCharCode(byte)
+      i++
+    } else if (byte >= 0x81 && byte <= 0xFE && i + 1 < uint8Array.length) {
+      // GBK双字节字符
+      const byte2 = uint8Array[i + 1]
+      if (byte2 >= 0x40 && byte2 <= 0xFE) {
+        // 尝试使用UTF-8编码作为替代
+        // 这里使用一个简化的映射
+        const codePoint = (byte - 0x81) * 191 + (byte2 - 0x40) + 0x4E00
+        if (codePoint >= 0x4E00 && codePoint <= 0x9FFF) {
+          result += String.fromCharCode(codePoint)
+        } else {
+          result += '?'
+        }
+        i += 2
+      } else {
+        result += '?'
+        i++
+      }
+    } else {
+      result += '?'
+      i++
+    }
+  }
+  
+  return result
+}
+
+// 处理工作簿的通用函数
+const processWorkbook = (workbook, resolve, reject) => {
+  try {
+    const sheets = workbook.SheetNames.map((sheetName) => {
           const worksheet = workbook.Sheets[sheetName]
           
           // 获取单元格格式信息，用于识别日期列
@@ -292,7 +501,7 @@ const readExcelFile = (file) => {
           
           // 处理合并单元格
           const processMergedCells = (data) => {
-            if (!data || data.length === 0) return data
+            if (!data || data.length === 0 || !data[0]) return data
             
             const processedData = []
             
@@ -384,30 +593,15 @@ const readExcelFile = (file) => {
           }
         }).filter(Boolean)
 
-        if (sheets.length === 0) {
-          reject(new Error('Excel文件中没有有效数据'))
-          return
-        }
-
-        resolve(sheets)
-      } catch (error) {
-        reject(new Error(`读取Excel文件失败: ${error.message}`))
-      }
+    if (sheets.length === 0) {
+      reject(new Error('文件中没有有效数据'))
+      return
     }
 
-    reader.onerror = () => reject(new Error('文件读取失败'))
-    try {
-      // 支持传入 ElementPlus 的 uploadFile 或原生 File
-      const rawFile = file?.raw instanceof Blob ? file.raw : file
-      if (!(rawFile instanceof Blob)) {
-        reject(new Error('无效的文件对象'))
-        return
-      }
-      reader.readAsArrayBuffer(rawFile)
-    } catch (err) {
-      reject(new Error('无法读取文件'))
-    }
-  })
+    resolve(sheets)
+  } catch (error) {
+    reject(new Error(`处理文件失败: ${error.message}`))
+  }
 }
 
 // 格式化日期为统一格式

@@ -1,79 +1,87 @@
 <template>
-  <uploadExcel title="合并文件" @parsed-data-updated="handleParsedDataUpdated">
-    <template #default>
-      <el-button type="primary" @click="rowToCol">合并文件并预览</el-button>
-      <el-tooltip placement="bottom" effect="light">
-        <template #content>
-          <div class="config-panel">
-            <div class="config-row">
-              <span class="config-label">返回按钮</span>
-              <el-switch v-model="includeShape" size="small" />
-            </div>
-            <div class="config-row">
-              <span class="config-label">行转列</span>
-              <el-switch v-model="enableTranspose" size="small" />
-            </div>
-            <div class="shape-row" v-if="includeShape">
-              <p>位置：</p>
-              <div class="shape-row-item">
-                <span class="field-label">左</span>
-                <el-input-number
-                  v-model="shapeX"
-                  :min="0"
-                  :step="10"
-                  size="small"
-                  class="num"
-                />
-                <span class="field-label">上</span>
-                <el-input-number
-                  v-model="shapeY"
-                  :min="0"
-                  :step="10"
-                  size="small"
-                  class="num"
-                />
-              </div>
-              <p>尺寸（像素）：</p>
-              <div class="shape-row-item">
-                <span class="field-label">宽</span>
-                <el-input-number
-                  v-model="shapeW"
-                  :min="10"
-                  :step="10"
-                  size="small"
-                  class="num"
-                />
-                <span class="field-label">高</span>
-                <el-input-number
-                  v-model="shapeH"
-                  :min="10"
-                  :step="10"
-                  size="small"
-                  class="num"
-                />
-              </div>
-            </div>
-          </div>
-        </template>
-        <el-button type="primary" @click="download">下载文件</el-button>
-      </el-tooltip>
-    </template>
+  <!-- 插入位置配置面板 -->
+  <div
+    class="config-panel"
+    v-show="splicingData.length > 0 && originalData.length > 0"
+  >
+    <h3>插入位置配置</h3>
+    <div class="config-row">
+      <span class="config-label">插入方式：</span>
+      <el-radio-group v-model="insertMode">
+        <el-radio label="before">插入到拼接文件前面</el-radio>
+        <el-radio label="after">插入到拼接文件后面</el-radio>
+        <el-radio label="position">指定位置插入</el-radio>
+      </el-radio-group>
+    </div>
+
+    <!-- 指定位置插入的配置 -->
+    <div v-show="insertMode === 'position'" class="position-config">
+      <div class="config-row">
+        <span class="field-label">起始行：</span>
+        <el-input-number
+          v-model="startRow"
+          :min="1"
+          :max="10000"
+          class="num"
+          placeholder="行号"
+        />
+        <span class="unit-label">行</span>
+      </div>
+      <div class="config-row">
+        <span class="field-label">起始列：</span>
+        <el-input-number
+          v-model="startCol"
+          :min="1"
+          :max="1000"
+          class="num"
+          placeholder="列号"
+        />
+        <span class="unit-label">列</span>
+      </div>
+    </div>
+
+    <!-- 操作按钮 -->
+    <div class="action-buttons">
+      <el-button type="primary" @click="rowToCol" :disabled="!canProcess">
+        生成预览
+      </el-button>
+      <el-button @click="download" :disabled="!workbook"> 下载文件 </el-button>
+    </div>
+  </div>
+  <uploadExcel
+    title="拼接文件"
+    :single="true"
+    @parsed-data-updated="handleSplicingDataUpdated"
+  >
+  </uploadExcel>
+  <uploadExcel
+    title="原始文件"
+    @parsed-data-updated="handleOriginalDataUpdated"
+  >
   </uploadExcel>
   <preview :parsedData="previewData" v-model="showOriginalFile" />
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import * as XLSX from 'xlsx'
 import JSZip from 'jszip'
 import uploadExcel from '../component/uploadExcel.vue'
 import Preview from '../component/preview.vue'
 
-const dataList = ref([])
+// 分离拼接文件和原始文件的数据
+const splicingData = ref([]) // 拼接文件数据
+const originalData = ref([]) // 原始文件数据
 const workbook = ref(null)
 const previewData = ref([])
 const showOriginalFile = ref(false)
+
+// 插入位置配置
+const insertMode = ref('after') // 'before', 'after', 'position'
+const startRow = ref(1) // 指定位置插入的起始行
+const startCol = ref(1) // 指定位置插入的起始列
+
 // 是否注入返回图形
 const includeShape = ref(true)
 // 是否进行行转列操作（默认关闭）
@@ -84,12 +92,24 @@ const shapeY = ref(20)
 const shapeW = ref(100)
 const shapeH = ref(40)
 const pxToEmu = (px) => Math.max(0, Math.round(Number(px || 0) * 9525))
-const handleParsedDataUpdated = (data) => {
-  dataList.value = data?.parsedData ?? []
+
+// 处理拼接文件数据更新
+const handleSplicingDataUpdated = (data) => {
+  splicingData.value = data?.parsedData ?? []
 }
+
+// 处理原始文件数据更新
+const handleOriginalDataUpdated = (data) => {
+  originalData.value = data?.parsedData ?? []
+}
+
+// 计算是否可以处理
+const canProcess = computed(() => {
+  return splicingData.value.length > 0 && originalData.value.length > 0
+})
 const rowToCol = () => {
-  if (!Array.isArray(dataList.value) || dataList.value.length === 0) {
-    ElMessage.warning('请先上传并解析文件')
+  if (!canProcess.value) {
+    ElMessage.warning('请先上传拼接文件和原始文件')
     return
   }
 
@@ -125,38 +145,156 @@ const rowToCol = () => {
     return name
   }
 
+  // 合并数据的函数
+  const mergeSheetData = (
+    splicingSheet,
+    originalSheet,
+    mode,
+    startR = 1,
+    startC = 1
+  ) => {
+    const splicingData = Array.isArray(splicingSheet?.data)
+      ? splicingSheet.data
+      : []
+    const originalData = Array.isArray(originalSheet?.data)
+      ? originalSheet.data
+      : []
+
+    if (mode === 'before') {
+      // 原始文件在前面
+      return [...originalData, ...splicingData]
+    } else if (mode === 'after') {
+      // 原始文件在后面
+      return [...splicingData, ...originalData]
+    } else if (mode === 'position') {
+      // 指定位置插入
+      return insertDataAtPosition(
+        splicingData,
+        originalData,
+        startR - 1,
+        startC - 1
+      )
+    }
+    return splicingData
+  }
+
+  // 在指定位置插入数据的函数
+  const insertDataAtPosition = (baseData, insertData, startRow, startCol) => {
+    if (!insertData || insertData.length === 0) return baseData
+    if (!baseData || baseData.length === 0) return insertData
+
+    const result = [...baseData]
+    const insertRows = insertData.length
+    const insertCols = Math.max(...insertData.map((row) => row.length || 0))
+
+    // 确保结果数组有足够的行
+    const maxRow = Math.max(result.length - 1, startRow + insertRows - 1)
+    while (result.length <= maxRow) {
+      result.push([])
+    }
+
+    // 插入数据
+    insertData.forEach((row, rowIndex) => {
+      const targetRowIndex = startRow + rowIndex
+      if (!result[targetRowIndex]) {
+        result[targetRowIndex] = []
+      }
+
+      // 确保目标行有足够的列
+      const maxCol = Math.max(
+        result[targetRowIndex].length - 1,
+        startCol + (row.length || 0) - 1
+      )
+      while (result[targetRowIndex].length <= maxCol) {
+        result[targetRowIndex].push('')
+      }
+
+      // 插入行数据
+      if (Array.isArray(row)) {
+        row.forEach((cell, colIndex) => {
+          result[targetRowIndex][startCol + colIndex] = cell
+        })
+      }
+    })
+
+    return result
+  }
+
   workbook.value = XLSX.utils.book_new()
   const usedSheetNames = new Set()
   const mergedPreview = {
-    fileName: enableTranspose.value ? '合并-行转列' : '合并文件',
+    fileName: enableTranspose.value ? '拼接-行转列' : '拼接文件',
     sheets: [],
   }
 
   // 收集所有工作表信息用于总览表
   const sheetInfoList = []
+  const missingSheets = [] // 记录没有对应原始文件的工作表
 
-  dataList.value.forEach((fileGroup) => {
-    const fileBaseName = String(fileGroup.fileName || 'Excel').replace(
+  // 收集所有拼接文件的工作表名称
+  const splicingSheetNames = new Set()
+  splicingData.value.forEach((fileGroup) => {
+    const sheets = Array.isArray(fileGroup.sheets) ? fileGroup.sheets : []
+    sheets.forEach((sheet) => {
+      splicingSheetNames.add(sheet.name)
+    })
+  })
+
+  // 处理原始文件 - 每个原始文件的工作表作为独立的sheet显示拼接结果
+  originalData.value.forEach((originalFile) => {
+    const originalFileBaseName = String(originalFile.fileName || 'Excel').replace(
       /\.(xlsx|xls)$/i,
       ''
     )
-    const sheets = Array.isArray(fileGroup.sheets) ? fileGroup.sheets : []
-    sheets.forEach((sheet) => {
-      const original = Array.isArray(sheet?.data) ? sheet.data : []
-      const processedData = enableTranspose.value ? transposeAoA(original) : original
-      const ws = XLSX.utils.aoa_to_sheet(processedData)
-      const rawSheetName = String(sheet?.name ?? 'Sheet')
+    const originalSheets = Array.isArray(originalFile.sheets) ? originalFile.sheets : []
+
+    originalSheets.forEach((originalSheet) => {
+      // 查找对应的拼接文件工作表
+      let correspondingSplicingSheet = null
+      splicingData.value.forEach((splicingFile) => {
+        const splicingSheets = Array.isArray(splicingFile.sheets) ? splicingFile.sheets : []
+        const found = splicingSheets.find((s) => s.name === originalSheet.name)
+        if (found) {
+          correspondingSplicingSheet = found
+        }
+      })
+
+      // 生成sheet名称
+      const rawSheetName = String(originalSheet?.name ?? 'Sheet')
       const isGenericSheet = /sheet/i.test(rawSheetName)
-      const candidate = isGenericSheet ? fileBaseName : rawSheetName
+      const candidate = isGenericSheet ? originalFileBaseName : rawSheetName
       const safeName = createUniqueSheetName(
         sanitizeSheetName(candidate),
         usedSheetNames
       )
 
+      // 合并数据
+      let mergedData = Array.isArray(originalSheet?.data) ? originalSheet.data : []
+      if (correspondingSplicingSheet) {
+        // 有对应的拼接工作表，进行合并
+        mergedData = mergeSheetData(
+          correspondingSplicingSheet,
+          originalSheet,
+          insertMode.value,
+          startRow.value,
+          startCol.value
+        )
+      } else {
+        // 没有对应的拼接工作表，只使用原始数据
+        console.warn(
+          `未找到工作表 "${originalSheet.name}" 对应的拼接文件数据，将只使用原始文件数据`
+        )
+      }
+
+      const processedData = enableTranspose.value
+        ? transposeAoA(mergedData)
+        : mergedData
+      const ws = XLSX.utils.aoa_to_sheet(processedData)
+
       // 保存工作表信息
       sheetInfoList.push({
         name: safeName,
-        originalFileName: fileGroup.fileName,
+        originalFileName: originalFile.fileName,
       })
 
       const maxColumns = processedData.reduce(
@@ -171,6 +309,7 @@ const rowToCol = () => {
       XLSX.utils.book_append_sheet(workbook.value, ws, safeName)
     })
   })
+
 
   // 创建总览工作表
   if (sheetInfoList.length > 0) {
@@ -218,6 +357,20 @@ const rowToCol = () => {
 
   previewData.value = [mergedPreview]
   showOriginalFile.value = true
+
+  // 统计处理结果
+  const totalSheets = sheetInfoList.length
+  const totalOriginalSheets = originalData.value.reduce((total, file) => {
+    return total + (Array.isArray(file.sheets) ? file.sheets.length : 0)
+  }, 0)
+
+  // 给用户详细的处理结果提示
+  let message = `文件拼接完成！共生成 ${totalSheets} 个工作表`
+  if (totalOriginalSheets > 0) {
+    message += `，基于 ${totalOriginalSheets} 个原始工作表`
+  }
+  
+  ElMessage.success(message)
 }
 
 const download = async () => {
@@ -437,14 +590,37 @@ const download = async () => {
 .config-panel {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 6px 8px;
+  gap: 16px;
+  padding: 20px;
+  margin: 20px 0;
+  border: 1px solid #e4e7ed;
+  border-radius: 8px;
+  background-color: #fafafa;
+
+  h3 {
+    margin: 0 0 16px 0;
+    color: #409eff;
+    font-size: 16px;
+    font-weight: 600;
+  }
 }
 
 .config-row {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.position-config {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background-color: white;
+  border: 1px solid #e4e7ed;
+  border-radius: 6px;
+  margin-top: 8px;
 }
 
 .shape-row {
@@ -459,27 +635,49 @@ const download = async () => {
 }
 
 .config-label {
-  font-size: 12px;
-  color: #666;
+  font-size: 14px;
+  color: #606266;
+  font-weight: 500;
+  min-width: 80px;
 }
 
 .field-label {
-  font-size: 12px;
-  color: #666;
-  margin-right: 2px;
+  font-size: 14px;
+  color: #606266;
+  margin-right: 8px;
+  min-width: 60px;
 }
 
 .unit-label {
   font-size: 12px;
-  color: #999;
+  color: #909399;
   margin-left: 4px;
 }
 
 .num :deep(.el-input__wrapper) {
-  padding: 0 6px;
+  padding: 0 8px;
 }
 
 .num {
-  width: 92px;
+  width: 100px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid #e4e7ed;
+}
+
+:deep(.el-radio-group) {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+:deep(.el-radio) {
+  margin-right: 0;
+  margin-bottom: 4px;
 }
 </style>
