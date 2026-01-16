@@ -177,8 +177,6 @@ import {
   reactive,
   computed,
   onMounted,
-  defineProps,
-  defineEmits,
 } from 'vue'
 
 // Props
