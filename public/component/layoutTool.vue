@@ -11,11 +11,9 @@
       <slot name="ft"> </slot>
     </div>
   </div>
-  <waveAnimation animationAfter :showLogo="false"/>
 </template>
 <script setup lang="ts">
 import GetCode from './getCode.vue'
-import waveAnimation from '../../../components/waveAnimation.vue'
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 const router = useRouter()
